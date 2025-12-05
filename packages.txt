@@ -1,9 +1,7 @@
-libgl1-mesa-glx
-libglib2.0-0
-libsm6
-libxext6
-libxrender-dev
-libgomp1
-libglib2.0-dev
 tesseract-ocr
-
+tesseract-ocr-eng
+tesseract-ocr-jpn
+tesseract-ocr-hin
+tesseract-ocr-spa
+tesseract-ocr-fra
+ffmpeg

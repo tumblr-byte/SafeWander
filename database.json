@@ -1,159 +1,180 @@
 {
-  "locations": {
-    "Bangkok": {
-      "country": "Thailand",
-      "safety_score": 8.5,
-      "safe_at_night": false,
-      "common_scams": [
-        "Gem shop scam - overpriced stones",
-        "Taxi overcharging - meter broken",
-        "Fake tours - street vendors",
-        "Drink spiking - bars and clubs"
-      ],
-      "safe_zones": [
-        "BTS Sukhumvit Station",
-        "Shopping malls (CentralWorld, EmQuartier)",
-        "Tourist areas (Khao San Road - daytime only)"
-      ],
-      "unsafe_times": ["2AM-5AM", "Late night in Patpong"],
-      "emergency_contacts": {
-        "police": "+66-1191",
-        "ambulance": "+66-1669",
-        "fire": "+66-1199",
-        "women_helpline": "+66-1300",
-        "tourist_police": "+66-4-281-5051",
-        "ngo_safe_house": "+66-2-xxx-xxxx"
-      },
-      "survival_words": {
-        "help": "ช่วยด้วย",
-        "police": "ตำรวจ",
-        "stop": "หยุด",
-        "no": "ไม่",
-        "yes": "ใช่",
-        "hospital": "โรงพยาบาล",
-        "i_am_lost": "ฉันหลงทาง",
-        "too_expensive": "แพงเกินไป",
-        "thank_you": "ขอบคุณ",
-        "i_dont_understand": "ฉันไม่เข้าใจ"
-      },
-      "cultural_awareness": {
-        "do": [
-          "Remove shoes before entering homes/temples",
-          "Show respect to elders",
-          "Learn basic Thai greetings",
-          "Dress modestly in religious areas",
-          "Wai (hands together) as greeting"
-        ],
-        "dont": [
-          "Point feet at Buddha images",
-          "Touch people's heads",
-          "Raise voice in public",
-          "Disrespect the King",
-          "Wear revealing clothes in temples"
-        ]
-      },
-      "transport": {
-        "taxi_base": "35 THB",
-        "taxi_per_km": "5 THB",
-        "recommended": "Grab app (safer, tracked)",
-        "avoid": "Unmarked taxis after 11 PM"
-      },
-      "money": {
-        "exchange_rate": "1 INR = 0.42 THB",
-        "safe_exchange": ["Airport", "Banks", "7-Eleven"],
-        "roaming": "~2 THB/min or get local SIM",
-        "money_transfer": ["Wise", "Western Union", "MoneyGram"]
-      },
-      "hotels": {
-        "budget": {
-          "price_range": "$10-20/night",
-          "safe_areas": ["Sukhumvit", "Silom"]
-        },
-        "mid_range": {
-          "price_range": "$30-60/night",
-          "safe_areas": ["Sukhumvit", "Silom", "Riverside"]
-        }
-      }
-    },
-    "New Delhi": {
-      "country": "India",
-      "safety_score": 6.5,
-      "safe_at_night": false,
-      "common_scams": [
-        "Fake taxi meters",
-        "Overpriced tours",
-        "Gem/jewelry scams",
-        "ATM skimming"
-      ],
-      "safe_zones": [
-        "Connaught Place",
-        "Khan Market",
-        "Shopping malls"
-      ],
-      "unsafe_times": ["After 10 PM", "Early morning 4-6 AM"],
-      "emergency_contacts": {
+  "countries": [
+    {
+      "id": "IND",
+      "name": "India",
+      "emergency_numbers": {
         "police": "100",
         "ambulance": "102",
         "women_helpline": "1091",
-        "tourist_helpline": "1363"
+        "fire": "101"
       },
-      "survival_words": {
-        "help": "मदद करो",
-        "police": "पुलिस",
-        "stop": "रुको",
-        "no": "नहीं",
-        "yes": "हाँ",
-        "hospital": "अस्पताल",
-        "thank_you": "धन्यवाद"
+      "transport": {
+        "available": ["Uber", "Ola", "Metro", "Auto Rickshaw", "Bus"],
+        "avg_taxi_fare_per_km": 18,
+        "airport_fixed_rate": {
+          "delhi": 500,
+          "mumbai": 650
+        }
+      },
+      "common_scams": [
+        {
+          "name": "Taxi Overcharge Scam",
+          "situation_keywords": ["taxi", "overcharge", "extra money", "no meter"],
+          "how_it_happens": "Driver refuses to start meter and demands 3–5x price.",
+          "how_to_avoid": [
+            "Always insist on meter.",
+            "Use Uber/Ola.",
+            "Do not agree to fixed price at airport."
+          ],
+          "what_to_do": [
+            "Politely refuse.",
+            "Take screenshot of driver.",
+            "Report on Uber/Ola help support.",
+            "Call police if forced."
+          ]
+        },
+        {
+          "name": "Fake Tourist Guide",
+          "situation_keywords": ["guide", "tour", "ticket"],
+          "how_it_happens": "Fake guide approaches claiming official license.",
+          "how_to_avoid": [
+            "Book only via official counters.",
+            "Avoid unsolicited helpers."
+          ],
+          "what_to_do": [
+            "Walk away.",
+            "Ask to see ID.",
+            "Contact tourist police."
+          ]
+        }
+      ],
+      "harassment_patterns": {
+        "examples": [
+          {
+            "name": "Being Followed",
+            "description": "Someone walks behind you for a long distance.",
+            "recommended_actions": [
+              "Move to crowded area.",
+              "Enter a shop.",
+              "Call emergency contact.",
+              "Use SOS inside app."
+            ]
+          },
+          {
+            "name": "Unwanted Touching",
+            "description": "Someone bumps or touches repeatedly.",
+            "recommended_actions": [
+              "Move away immediately.",
+              "Raise your voice to attract attention.",
+              "Call women helpline."
+            ]
+          }
+        ]
+      },
+      "culture": {
+        "greetings": "Namaste with slight bow.",
+        "dress_code": "Modest clothing recommended in temples.",
+        "dos": ["Remove shoes when entering homes/temples.", "Respect elders."],
+        "donts": ["Avoid kissing in public.", "Don't use left hand to give items."]
+      },
+      "local_phrases": {
+        "help": "Madad kijiye!",
+        "where_is": "Yeh kahan hai?",
+        "emergency": "Mujhe madad chahiye!",
+        "stop": "Ruko!"
+      },
+      "laws": {
+        "alcohol": "Legal age varies by state (18–25).",
+        "drugs": "Strictly illegal.",
+        "privacy": "Do not take photos of women without permission.",
+        "restricted_areas": ["Military zones"]
+      },
+      "important_locations": {
+        "hospitals": [
+          {
+            "name": "AIIMS Hospital",
+            "lat": 28.5672,
+            "lng": 77.2100,
+            "contact": "011-26588500"
+          }
+        ],
+        "police_stations": [
+          {
+            "name": "Connaught Place Police Station",
+            "lat": 28.6329,
+            "lng": 77.2195,
+            "contact": "100"
+          }
+        ],
+        "embassy": {
+          "usa": {
+            "address": "Shantipath, Chanakyapuri",
+            "contact": "+91 11 2419 8000"
+          }
+        }
+      },
+      "sample_weather": {
+        "temperature": 32,
+        "humidity": 45,
+        "condition": "Sunny"
+      }
+    },
+
+
+    {
+      "id": "JPN",
+      "name": "Japan",
+      "emergency_numbers": {
+        "police": "110",
+        "ambulance": "119"
+      },
+      "transport": {
+        "available": ["Metro", "JR Rail", "Taxi"],
+        "avg_taxi_fare_per_km": 410
+      },
+      "common_scams": [
+        {
+          "name": "Bar Overcharging Scam",
+          "situation_keywords": ["bar", "bill", "overcharge"],
+          "how_it_happens": "Tourists are invited into clubs with hidden charges.",
+          "how_to_avoid": ["Check menu prices before entering."],
+          "what_to_do": ["Call police 110.", "Refuse to pay fake charges."]
+        }
+      ],
+      "culture": {
+        "greetings": "Bow slightly.",
+        "dos": ["Be quiet on trains.", "Carry cash."],
+        "donts": ["Don’t tip.", "Don’t talk loud in public."]
+      }
+    },
+
+
+    {
+      "id": "USA",
+      "name": "United States",
+      "emergency_numbers": {
+        "police": "911",
+        "ambulance": "911"
+      },
+      "transport": {
+        "available": ["Uber", "Lyft", "Bus", "Taxi"],
+        "avg_taxi_fare_per_km": 1.6
+      },
+      "common_scams": [
+        {
+          "name": "Fake Donation Scam",
+          "situation_keywords": ["donation", "money", "help"],
+          "how_it_happens": "People pretend to raise money for fake causes.",
+          "how_to_avoid": ["Donate only to registered charities."],
+          "what_to_do": ["Walk away.", "Report to authorities."]
+        }
+      ],
+      "culture": {
+        "greetings": "Handshake",
+        "dos": ["Maintain eye contact."],
+        "donts": ["Don’t invade personal space."]
       }
     }
-  },
-  "community_reports": [
-    {
-      "id": "report_001",
-      "type": "scam",
-      "location": "Khao San Road, Bangkok",
-      "title": "Gem Shop Scam",
-      "description": "Gem shop with touts outside. Stones are overpriced and fake quality. Avoid completely.",
-      "reported_by": "traveler_123",
-      "verified": true,
-      "upvotes": 45,
-      "date": "2025-11-20",
-      "severity": "high"
-    },
-    {
-      "id": "report_002",
-      "type": "safe_spot",
-      "location": "BTS Sukhumvit Station, Bangkok",
-      "title": "Safe Shopping Area",
-      "description": "Lots of tourists, good restaurants, safe at all times. Well-lit and crowded.",
-      "reported_by": "local_bangkok_456",
-      "verified": true,
-      "upvotes": 78,
-      "date": "2025-11-18"
-    },
-    {
-      "id": "report_003",
-      "type": "situational_tip",
-      "location": "Bangkok Taxis",
-      "title": "How to Avoid Taxi Scams",
-      "description": "Always use Grab app or insist on meter. Negotiate fare before boarding. If meter is broken, find another taxi.",
-      "reported_by": "local_bangkok_789",
-      "verified": true,
-      "upvotes": 92,
-      "date": "2025-11-15"
-    },
-    {
-      "id": "report_004",
-      "type": "incident",
-      "location": "Patpong District, Bangkok",
-      "title": "Woman Followed at Night",
-      "description": "Woman was followed at night. Stayed in crowded area, called friend, was safe. Lesson: trust your gut and go to public areas.",
-      "reported_by": "traveler_789",
-      "verified": true,
-      "upvotes": 32,
-      "what_helped": "Stayed in public areas, called friend, alerted police"
-    }
-  ],
-  "user_complaints": []
+  ]
 }
