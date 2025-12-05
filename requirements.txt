@@ -5,4 +5,4 @@ Pillow>=10.0.0
 python-dotenv>=1.0.0
 gTTS>=2.4.0
 langdetect>=1.0.9
-streamlit-audio-recorder>=0.0.8
+audio-recorder-streamlit>=0.0.8
