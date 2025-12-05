@@ -138,3 +138,31 @@ def get_groq_client() -> Optional[GroqClient]:
     except ValueError as e:
         st.error(f"❌ {str(e)}")
         return None
+
+
+def validate_api_key() -> bool:
+    """
+    Validate that Groq API key is available and valid.
+    
+    Returns:
+        True if API key is valid, False otherwise
+    """
+    api_key = None
+    
+    # Try to get from Streamlit secrets first
+    try:
+        api_key = st.secrets.get("GROQ_API_KEY")
+    except:
+        pass
+    
+    # Fallback to environment variable
+    if not api_key:
+        import os
+        from dotenv import load_dotenv
+        load_dotenv()
+        api_key = os.getenv("GROQ_API_KEY")
+    
+    if not api_key or api_key.strip() == "":
+        return False
+    
+    return True
