@@ -250,35 +250,56 @@ def show_navigation():
         st.markdown("---")
         
         # Navigation menu
-        pages = {
-            "<i class='fas fa-home'></i> Home": "home",
-            "<i class='fas fa-exclamation-triangle'></i> Situation Analyzer": "analyzer",
-            "<i class='fas fa-language'></i> Polite Translator": "translator",
-            "<i class='fas fa-camera'></i> OCR Translator": "ocr",
-            "<i class='fas fa-cog'></i> Profile Settings": "settings",
-            "<i class='fas fa-ambulance'></i> Emergency": "emergency"
-        }
-        
         current_page = get_session_value('current_page', 'home')
         
-        for label, page_id in pages.items():
-            # Create custom styled button with HTML
-            button_style = "primary" if current_page == page_id else "secondary"
+        # Navigation items
+        nav_items = [
+            ("home", "fa-home", "Home"),
+            ("analyzer", "fa-exclamation-triangle", "Situation Analyzer"),
+            ("translator", "fa-language", "Polite Translator"),
+            ("ocr", "fa-camera", "OCR Translator"),
+            ("settings", "fa-cog", "Profile Settings"),
+            ("emergency", "fa-ambulance", "Emergency")
+        ]
+        
+        # Create navigation buttons
+        for page_id, icon, label in nav_items:
+            is_active = current_page == page_id
+            
+            # Display icon and label as markdown above button
+            st.markdown(f"""
+                <div style="margin-bottom: -45px; pointer-events: none;">
+                    <div style="
+                        background: {'#6366F1' if is_active else 'rgba(30, 41, 59, 0.5)'};
+                        border: {'2px solid #6366F1' if is_active else '1px solid rgba(99, 102, 241, 0.3)'};
+                        border-radius: 8px;
+                        padding: 12px 16px;
+                        margin: 4px 0;
+                        backdrop-filter: blur(10px);
+                        transition: all 0.3s ease;
+                    ">
+                        <i class="fas {icon}" style="margin-right: 10px; width: 18px;"></i>
+                        <span style="font-weight: {'600' if is_active else '400'};">{label}</span>
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
+            
+            # Invisible button for click handling
             if st.button(label, key=f"nav_{page_id}", use_container_width=True, 
-                        type=button_style):
+                        type="primary" if is_active else "secondary"):
                 set_session_value('current_page', page_id)
                 st.rerun()
         
-        # Add custom CSS for navigation buttons
+        # Hide button text with CSS
         st.markdown("""
             <style>
-            .stButton button {
-                text-align: left;
-                font-size: 1rem;
+            [data-testid="stSidebar"] .stButton button {
+                opacity: 0.01;
+                height: 48px;
+                margin-top: -4px;
             }
-            .stButton button i {
-                margin-right: 8px;
-                width: 20px;
+            [data-testid="stSidebar"] .stButton button:hover {
+                opacity: 0.05;
             }
             </style>
         """, unsafe_allow_html=True)
