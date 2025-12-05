@@ -3,7 +3,8 @@ import json
 import os
 from datetime import datetime
 import speech_recognition as sr
-from translate import Translator
+from deep_translator import GoogleTranslator
+import pyttsx3
 import pytesseract
 from PIL import Image
 import requests
@@ -134,10 +135,17 @@ st.markdown("---")
 with st.sidebar:
     st.header("⚙️ Setup")
     
-    grok_api_key = st.text_input("Enter Grok API Key", type="password", key="grok_key")
-    if grok_api_key:
+    # Try to load from secrets first
+    try:
+        grok_api_key = st.secrets["GROK_API_KEY"]
         st.session_state.grok_client = grok_api_key
-        st.success("✅ Grok API Connected")
+        st.success("✅ Grok API Connected from Secrets")
+    except:
+        # Fallback to manual input
+        grok_api_key = st.text_input("Enter Grok API Key", type="password", key="grok_key")
+        if grok_api_key:
+            st.session_state.grok_client = grok_api_key
+            st.success("✅ Grok API Connected")
     
     st.markdown("---")
     st.markdown("### 📍 Quick Stats")
@@ -360,24 +368,59 @@ with tab3:
     
     with col1:
         st.subheader("🗣️ Speak to Translate")
-        language = st.selectbox("Local language", ["Thai", "Spanish", "French", "German", "Japanese", "Mandarin"])
         
-        if st.button("🎙️ Start Recording", key="record_voice"):
-            st.info("Recording... (Simulated)")
-            st.write("*You said: 'How much does this cost?'*")
+        # Language mapping
+        lang_map = {
+            "Hindi": "hi",
+            "Thai": "th",
+            "Spanish": "es",
+            "French": "fr",
+            "German": "de",
+            "Japanese": "ja",
+            "Mandarin": "zh-CN"
+        }
+        
+        language = st.selectbox("Local language", list(lang_map.keys()))
+        lang_code = lang_map[language]
+        
+        # Text input for translation
+        user_text = st.text_area("What do you want to say?", placeholder="Type or paste text here", height=100)
+        
+        if st.button("🔄 Translate", key="translate_text"):
+            if user_text:
+                try:
+                    translator = GoogleTranslator(source_language='en', target_language=lang_code)
+                    translated = translator.translate(user_text)
+                    st.success("✅ Translation:")
+                    st.write(f"**{translated}**")
+                    
+                    # Text-to-speech
+                    if st.button("🔊 Speak Translation", key="speak_translation"):
+                        try:
+                            engine = pyttsx3.init()
+                            engine.setProperty('rate', 150)
+                            engine.say(translated)
+                            engine.runAndWait()
+                            st.success("🔊 Playing audio...")
+                        except Exception as e:
+                            st.error(f"Audio error: {str(e)}")
+                except Exception as e:
+                    st.error(f"Translation error: {str(e)}")
+            else:
+                st.warning("Please enter text to translate")
         
         st.markdown("---")
         
         st.subheader("💬 Survival Phrases")
         phrases = {
-            "Help": "ช่วยด้วย",
-            "Police": "ตำรวจ",
-            "Hospital": "โรงพยาบาล",
-            "Stop": "หยุด",
-            "I'm lost": "ฉันหลงทาง",
-            "Too expensive": "แพงเกินไป",
-            "Thank you": "ขอบคุณ",
-            "I don't understand": "ฉันไม่เข้าใจ"
+            "Help": "मदद करो",
+            "Police": "पुलिस",
+            "Hospital": "अस्पताल",
+            "Stop": "रुको",
+            "I'm lost": "मैं खो गया हूँ",
+            "Too expensive": "बहुत महंगा है",
+            "Thank you": "धन्यवाद",
+            "I don't understand": "मैं नहीं समझता"
         }
         
         for english, local in phrases.items():
