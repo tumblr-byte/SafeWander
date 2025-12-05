@@ -23,8 +23,9 @@ def load_custom_css():
     """Load custom CSS styling"""
     css = """
     <style>
-    /* Import Inter font */
+    /* Import Inter font and Font Awesome */
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
     
     :root {
         --primary: #6366F1;
@@ -185,7 +186,7 @@ def show_logo():
         with col2:
             st.image(str(logo_path), use_container_width=True)
     else:
-        st.markdown("<h1 style='text-align: center; color: #6366F1;'>🛡️ SafeWonder</h1>", unsafe_allow_html=True)
+        st.markdown("<h1 style='text-align: center; color: #6366F1;'><i class='fas fa-shield-alt'></i> SafeWonder</h1>", unsafe_allow_html=True)
 
 
 def show_emergency_modal():
@@ -196,7 +197,7 @@ def show_emergency_modal():
         st.error("⚠️ Country data not loaded. Please complete onboarding.")
         return
     
-    st.markdown("### 🆘 Emergency Contacts")
+    st.markdown("### <i class='fas fa-ambulance'></i> Emergency Contacts", unsafe_allow_html=True)
     
     emergency_numbers = country_data.get('emergency_numbers', {})
     
@@ -219,22 +220,22 @@ def show_emergency_modal():
             idx += 1
     
     # Important locations
-    st.markdown("### 📍 Important Locations")
+    st.markdown("### <i class='fas fa-map-marker-alt'></i> Important Locations", unsafe_allow_html=True)
     
     locations = country_data.get('important_locations', {})
     
     if 'hospitals' in locations and locations['hospitals']:
-        st.markdown("**🏥 Hospitals**")
+        st.markdown("**<i class='fas fa-hospital'></i> Hospitals**", unsafe_allow_html=True)
         for hospital in locations['hospitals']:
             st.markdown(f"- **{hospital['name']}**: {hospital.get('contact', 'N/A')}")
     
     if 'police_stations' in locations and locations['police_stations']:
-        st.markdown("**👮 Police Stations**")
+        st.markdown("**<i class='fas fa-shield-alt'></i> Police Stations**", unsafe_allow_html=True)
         for station in locations['police_stations']:
             st.markdown(f"- **{station['name']}**: {station.get('contact', 'N/A')}")
     
     if 'embassy' in locations and locations['embassy']:
-        st.markdown("**🏛️ Embassy Contacts**")
+        st.markdown("**<i class='fas fa-landmark'></i> Embassy Contacts**", unsafe_allow_html=True)
         for country, info in locations['embassy'].items():
             st.markdown(f"- **{country.upper()}**: {info.get('contact', 'N/A')}")
             if 'address' in info:
@@ -250,39 +251,55 @@ def show_navigation():
         
         # Navigation menu
         pages = {
-            "🏠 Home": "home",
-            "🚨 Situation Analyzer": "analyzer",
-            "🗣️ Polite Translator": "translator",
-            "📸 OCR Translator": "ocr",
-            "⚙️ Profile Settings": "settings",
-            "🆘 Emergency": "emergency"
+            "<i class='fas fa-home'></i> Home": "home",
+            "<i class='fas fa-exclamation-triangle'></i> Situation Analyzer": "analyzer",
+            "<i class='fas fa-language'></i> Polite Translator": "translator",
+            "<i class='fas fa-camera'></i> OCR Translator": "ocr",
+            "<i class='fas fa-cog'></i> Profile Settings": "settings",
+            "<i class='fas fa-ambulance'></i> Emergency": "emergency"
         }
         
         current_page = get_session_value('current_page', 'home')
         
         for label, page_id in pages.items():
+            # Create custom styled button with HTML
+            button_style = "primary" if current_page == page_id else "secondary"
             if st.button(label, key=f"nav_{page_id}", use_container_width=True, 
-                        type="primary" if current_page == page_id else "secondary"):
+                        type=button_style):
                 set_session_value('current_page', page_id)
                 st.rerun()
+        
+        # Add custom CSS for navigation buttons
+        st.markdown("""
+            <style>
+            .stButton button {
+                text-align: left;
+                font-size: 1rem;
+            }
+            .stButton button i {
+                margin-right: 8px;
+                width: 20px;
+            }
+            </style>
+        """, unsafe_allow_html=True)
         
         st.markdown("---")
         
         # User info
         user_profile = get_session_value('user_profile')
         if user_profile:
-            st.markdown(f"**👤 {user_profile.get('name', 'User')}**")
-            st.markdown(f"📍 {user_profile.get('traveling_to_city', 'Unknown')}, {user_profile.get('traveling_to_country', 'Unknown')}")
+            st.markdown(f"**<i class='fas fa-user'></i> {user_profile.get('name', 'User')}**", unsafe_allow_html=True)
+            st.markdown(f"<i class='fas fa-map-marker-alt'></i> {user_profile.get('traveling_to_city', 'Unknown')}, {user_profile.get('traveling_to_country', 'Unknown')}", unsafe_allow_html=True)
 
 
 def show_home_page():
     """Display home page"""
-    st.markdown("# Welcome to SafeWonder! 🛡️")
+    st.markdown("# <i class='fas fa-shield-alt'></i> Welcome to SafeWonder!", unsafe_allow_html=True)
     
     user_profile = get_session_value('user_profile')
     if user_profile:
-        st.markdown(f"### Hello, {user_profile.get('name')}! 👋")
-        st.markdown(f"You're traveling to **{user_profile.get('traveling_to_city')}**, **{user_profile.get('traveling_to_country')}**")
+        st.markdown(f"### <i class='fas fa-hand-wave'></i> Hello, {user_profile.get('name')}!", unsafe_allow_html=True)
+        st.markdown(f"<i class='fas fa-plane-departure'></i> You're traveling to **{user_profile.get('traveling_to_city')}**, **{user_profile.get('traveling_to_country')}**", unsafe_allow_html=True)
     
     st.markdown("---")
     
@@ -292,14 +309,14 @@ def show_home_page():
     with col1:
         st.markdown("""
         <div class="custom-card">
-            <h3>🚨 Situation Analyzer</h3>
+            <h3><i class="fas fa-exclamation-triangle"></i> Situation Analyzer</h3>
             <p>Describe any situation and get instant risk assessment with safety recommendations.</p>
         </div>
         """, unsafe_allow_html=True)
         
         st.markdown("""
         <div class="custom-card">
-            <h3>🗣️ Polite Translator</h3>
+            <h3><i class="fas fa-language"></i> Polite Translator</h3>
             <p>Translate phrases with cultural context and pronunciation guidance.</p>
         </div>
         """, unsafe_allow_html=True)
@@ -307,21 +324,21 @@ def show_home_page():
     with col2:
         st.markdown("""
         <div class="custom-card">
-            <h3>📸 OCR Translator</h3>
+            <h3><i class="fas fa-camera"></i> OCR Translator</h3>
             <p>Photograph signs, menus, or documents for instant translation and scam detection.</p>
         </div>
         """, unsafe_allow_html=True)
         
         st.markdown("""
         <div class="custom-card">
-            <h3>🆘 Emergency</h3>
+            <h3><i class="fas fa-ambulance"></i> Emergency</h3>
             <p>Quick access to emergency contacts, hospitals, and police stations.</p>
         </div>
         """, unsafe_allow_html=True)
     
     # Safety tips
     st.markdown("---")
-    st.markdown("### 💡 Quick Safety Tips")
+    st.markdown("### <i class='fas fa-lightbulb'></i> Quick Safety Tips", unsafe_allow_html=True)
     
     country_data = get_session_value('country_data')
     if country_data and 'culture' in country_data:
@@ -331,13 +348,13 @@ def show_home_page():
         
         with col1:
             if 'dos' in culture:
-                st.markdown("**✅ Do's**")
+                st.markdown("**<i class='fas fa-check-circle' style='color: #10B981;'></i> Do's**", unsafe_allow_html=True)
                 for do in culture['dos']:
                     st.markdown(f"- {do}")
         
         with col2:
             if 'donts' in culture:
-                st.markdown("**❌ Don'ts**")
+                st.markdown("**<i class='fas fa-times-circle' style='color: #EF4444;'></i> Don'ts**", unsafe_allow_html=True)
                 for dont in culture['donts']:
                     st.markdown(f"- {dont}")
 
@@ -410,7 +427,7 @@ def main():
         <div class="emergency-button">
             <a href="?emergency=true" style="text-decoration: none;">
                 <button style="background: #EF4444; color: white; border: none; padding: 16px; border-radius: 50%; font-size: 24px; cursor: pointer; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);">
-                    🆘
+                    <i class="fas fa-ambulance"></i>
                 </button>
             </a>
         </div>

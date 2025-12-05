@@ -22,7 +22,7 @@ class GroqClient:
             raise ValueError("Groq API key is required")
         
         self.client = Groq(api_key=api_key)
-        self.model = "llama-3.1-70b-versatile"
+        self.model = "llama-3.3-70b-versatile"
     
     def call_api(
         self,
