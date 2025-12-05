@@ -1,0 +1,159 @@
+{
+  "locations": {
+    "Bangkok": {
+      "country": "Thailand",
+      "safety_score": 8.5,
+      "safe_at_night": false,
+      "common_scams": [
+        "Gem shop scam - overpriced stones",
+        "Taxi overcharging - meter broken",
+        "Fake tours - street vendors",
+        "Drink spiking - bars and clubs"
+      ],
+      "safe_zones": [
+        "BTS Sukhumvit Station",
+        "Shopping malls (CentralWorld, EmQuartier)",
+        "Tourist areas (Khao San Road - daytime only)"
+      ],
+      "unsafe_times": ["2AM-5AM", "Late night in Patpong"],
+      "emergency_contacts": {
+        "police": "+66-1191",
+        "ambulance": "+66-1669",
+        "fire": "+66-1199",
+        "women_helpline": "+66-1300",
+        "tourist_police": "+66-4-281-5051",
+        "ngo_safe_house": "+66-2-xxx-xxxx"
+      },
+      "survival_words": {
+        "help": "ช่วยด้วย",
+        "police": "ตำรวจ",
+        "stop": "หยุด",
+        "no": "ไม่",
+        "yes": "ใช่",
+        "hospital": "โรงพยาบาล",
+        "i_am_lost": "ฉันหลงทาง",
+        "too_expensive": "แพงเกินไป",
+        "thank_you": "ขอบคุณ",
+        "i_dont_understand": "ฉันไม่เข้าใจ"
+      },
+      "cultural_awareness": {
+        "do": [
+          "Remove shoes before entering homes/temples",
+          "Show respect to elders",
+          "Learn basic Thai greetings",
+          "Dress modestly in religious areas",
+          "Wai (hands together) as greeting"
+        ],
+        "dont": [
+          "Point feet at Buddha images",
+          "Touch people's heads",
+          "Raise voice in public",
+          "Disrespect the King",
+          "Wear revealing clothes in temples"
+        ]
+      },
+      "transport": {
+        "taxi_base": "35 THB",
+        "taxi_per_km": "5 THB",
+        "recommended": "Grab app (safer, tracked)",
+        "avoid": "Unmarked taxis after 11 PM"
+      },
+      "money": {
+        "exchange_rate": "1 INR = 0.42 THB",
+        "safe_exchange": ["Airport", "Banks", "7-Eleven"],
+        "roaming": "~2 THB/min or get local SIM",
+        "money_transfer": ["Wise", "Western Union", "MoneyGram"]
+      },
+      "hotels": {
+        "budget": {
+          "price_range": "$10-20/night",
+          "safe_areas": ["Sukhumvit", "Silom"]
+        },
+        "mid_range": {
+          "price_range": "$30-60/night",
+          "safe_areas": ["Sukhumvit", "Silom", "Riverside"]
+        }
+      }
+    },
+    "New Delhi": {
+      "country": "India",
+      "safety_score": 6.5,
+      "safe_at_night": false,
+      "common_scams": [
+        "Fake taxi meters",
+        "Overpriced tours",
+        "Gem/jewelry scams",
+        "ATM skimming"
+      ],
+      "safe_zones": [
+        "Connaught Place",
+        "Khan Market",
+        "Shopping malls"
+      ],
+      "unsafe_times": ["After 10 PM", "Early morning 4-6 AM"],
+      "emergency_contacts": {
+        "police": "100",
+        "ambulance": "102",
+        "women_helpline": "1091",
+        "tourist_helpline": "1363"
+      },
+      "survival_words": {
+        "help": "मदद करो",
+        "police": "पुलिस",
+        "stop": "रुको",
+        "no": "नहीं",
+        "yes": "हाँ",
+        "hospital": "अस्पताल",
+        "thank_you": "धन्यवाद"
+      }
+    }
+  },
+  "community_reports": [
+    {
+      "id": "report_001",
+      "type": "scam",
+      "location": "Khao San Road, Bangkok",
+      "title": "Gem Shop Scam",
+      "description": "Gem shop with touts outside. Stones are overpriced and fake quality. Avoid completely.",
+      "reported_by": "traveler_123",
+      "verified": true,
+      "upvotes": 45,
+      "date": "2025-11-20",
+      "severity": "high"
+    },
+    {
+      "id": "report_002",
+      "type": "safe_spot",
+      "location": "BTS Sukhumvit Station, Bangkok",
+      "title": "Safe Shopping Area",
+      "description": "Lots of tourists, good restaurants, safe at all times. Well-lit and crowded.",
+      "reported_by": "local_bangkok_456",
+      "verified": true,
+      "upvotes": 78,
+      "date": "2025-11-18"
+    },
+    {
+      "id": "report_003",
+      "type": "situational_tip",
+      "location": "Bangkok Taxis",
+      "title": "How to Avoid Taxi Scams",
+      "description": "Always use Grab app or insist on meter. Negotiate fare before boarding. If meter is broken, find another taxi.",
+      "reported_by": "local_bangkok_789",
+      "verified": true,
+      "upvotes": 92,
+      "date": "2025-11-15"
+    },
+    {
+      "id": "report_004",
+      "type": "incident",
+      "location": "Patpong District, Bangkok",
+      "title": "Woman Followed at Night",
+      "description": "Woman was followed at night. Stayed in crowded area, called friend, was safe. Lesson: trust your gut and go to public areas.",
+      "reported_by": "traveler_789",
+      "verified": true,
+      "upvotes": 32,
+      "what_helped": "Stayed in public areas, called friend, alerted police"
+    }
+  ],
+  "user_complaints": []
+}
