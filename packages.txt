@@ -5,3 +5,5 @@ libxext6
 libxrender-dev
 libgomp1
 libglib2.0-dev
+tesseract-ocr
+
