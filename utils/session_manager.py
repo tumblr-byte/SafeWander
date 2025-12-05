@@ -136,3 +136,28 @@ def is_profile_completed() -> bool:
         True if profile is completed, False otherwise
     """
     return st.session_state.profile_completed
+
+
+def get_session_value(key: str, default: Any = None) -> Any:
+    """
+    Get a value from session state.
+    
+    Args:
+        key: Session state key
+        default: Default value if key doesn't exist
+        
+    Returns:
+        Value from session state or default
+    """
+    return st.session_state.get(key, default)
+
+
+def set_session_value(key: str, value: Any):
+    """
+    Set a value in session state.
+    
+    Args:
+        key: Session state key
+        value: Value to store
+    """
+    st.session_state[key] = value
