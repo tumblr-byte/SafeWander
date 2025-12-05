@@ -1,8 +1,14 @@
 """UI components for Situation Analyzer."""
 import streamlit as st
+import os
 from components.situation_analyzer import analyze_situation
 from utils.session_manager import get_user_profile, get_country_data, add_situation_to_history
 from utils.groq_client import get_groq_client
+try:
+    from audio_recorder_streamlit import audio_recorder
+    AUDIO_AVAILABLE = True
+except ImportError:
+    AUDIO_AVAILABLE = False
 
 
 def get_risk_color(risk_score: int) -> str:
@@ -100,23 +106,76 @@ def show_situation_analyzer():
     """, unsafe_allow_html=True)
     
     # Input section
-    st.subheader("📝 Describe Your Situation")
+    st.subheader("<i class='fas fa-edit'></i> Describe Your Situation", unsafe_allow_html=True)
     
-    col1, col2 = st.columns([4, 1])
-    
-    with col1:
-        situation_description = st.text_area(
-            "What's happening?",
-            placeholder="Example: A taxi driver is refusing to use the meter and asking for 5x the normal fare...",
-            height=150,
-            help="Describe the situation in detail. Include what's happening, where you are, and any concerns you have."
+    # Voice input section
+    if AUDIO_AVAILABLE:
+        st.markdown("**<i class='fas fa-microphone'></i> Voice Input**", unsafe_allow_html=True)
+        audio_bytes = audio_recorder(
+            text="Click to record",
+            recording_color="#EF4444",
+            neutral_color="#6366F1",
+            icon_name="microphone",
+            icon_size="2x"
         )
+        
+        if audio_bytes:
+            st.audio(audio_bytes, format="audio/wav")
+            
+            # Use Groq's Whisper API for transcription
+            with st.spinner("<i class='fas fa-spinner fa-spin'></i> Transcribing audio...", ):
+                try:
+                    # Save audio to temp file
+                    import tempfile
+                    with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp_file:
+                        tmp_file.write(audio_bytes)
+                        tmp_file_path = tmp_file.name
+                    
+                    # Transcribe using Groq Whisper
+                    groq_client = get_groq_client()
+                    if groq_client:
+                        with open(tmp_file_path, "rb") as audio_file:
+                            transcription = groq_client.client.audio.transcriptions.create(
+                                file=audio_file,
+                                model="whisper-large-v3",
+                                response_format="text"
+                            )
+                        
+                        # Clean up temp file
+                        os.unlink(tmp_file_path)
+                        
+                        # Store transcription in session state
+                        st.session_state.voice_transcription = transcription
+                        st.success(f"<i class='fas fa-check-circle'></i> Transcribed: {transcription}", unsafe_allow_html=True)
+                    else:
+                        os.unlink(tmp_file_path)
+                        st.error("<i class='fas fa-exclamation-triangle'></i> Groq client not available", unsafe_allow_html=True)
+                        
+                except Exception as e:
+                    st.error(f"<i class='fas fa-exclamation-triangle'></i> Transcription error: {str(e)}", unsafe_allow_html=True)
+                    if 'tmp_file_path' in locals():
+                        try:
+                            os.unlink(tmp_file_path)
+                        except:
+                            pass
     
-    with col2:
-        st.markdown("<br>", unsafe_allow_html=True)
-        voice_input = st.button("🎤 Voice\nInput", use_container_width=True, help="Record your situation (coming soon)")
-        if voice_input:
-            st.info("🎤 Voice input feature coming soon! Please use text input for now.")
+    # Text input section
+    st.markdown("**<i class='fas fa-keyboard'></i> Or Type Your Situation**", unsafe_allow_html=True)
+    
+    # Use transcription if available
+    default_text = st.session_state.get('voice_transcription', '')
+    
+    situation_description = st.text_area(
+        "What's happening?",
+        value=default_text,
+        placeholder="Example: A taxi driver is refusing to use the meter and asking for 5x the normal fare...",
+        height=150,
+        help="Describe the situation in detail. Include what's happening, where you are, and any concerns you have."
+    )
+    
+    # Clear transcription after use
+    if 'voice_transcription' in st.session_state and situation_description != default_text:
+        del st.session_state.voice_transcription
     
     analyze_button = st.button(
         "🔍 Analyze Situation",

@@ -1,5 +1,6 @@
 """UI components for Polite Culture Translator."""
 import streamlit as st
+import os
 from components.culture_translator import (
     translate_phrase,
     get_common_phrases_list,
@@ -7,6 +8,12 @@ from components.culture_translator import (
 )
 from utils.session_manager import get_user_profile, get_country_data, cache_translation, get_cached_translation
 from utils.groq_client import get_groq_client
+from utils.voice_utils import text_to_speech, get_language_code_for_tts
+try:
+    from audio_recorder_streamlit import audio_recorder
+    AUDIO_AVAILABLE = True
+except ImportError:
+    AUDIO_AVAILABLE = False
 
 
 def show_culture_translator():
@@ -112,28 +119,69 @@ def show_culture_translator():
                     st.session_state.selected_phrase = phrase_text
     
     # Translation input
-    st.subheader("💬 Your Phrase")
+    st.subheader("<i class='fas fa-comment'></i> Your Phrase", unsafe_allow_html=True)
     
-    col1, col2 = st.columns([5, 1])
-    
-    with col1:
-        default_text = st.session_state.get('selected_phrase', '')
-        phrase_input = st.text_area(
-            "Enter phrase to translate",
-            value=default_text,
-            placeholder="Example: Where is the nearest hospital?",
-            height=100,
-            help="Type any phrase you want to translate with cultural context"
+    # Voice input
+    if AUDIO_AVAILABLE:
+        st.markdown("**<i class='fas fa-microphone'></i> Speak Your Phrase**", unsafe_allow_html=True)
+        audio_bytes = audio_recorder(
+            text="Click to record",
+            recording_color="#EC4899",
+            neutral_color="#6366F1",
+            icon_name="microphone",
+            icon_size="2x"
         )
-        # Clear selected phrase after using it
-        if 'selected_phrase' in st.session_state:
-            del st.session_state.selected_phrase
+        
+        if audio_bytes:
+            st.audio(audio_bytes, format="audio/wav")
+            
+            with st.spinner("<i class='fas fa-spinner fa-spin'></i> Transcribing...", ):
+                try:
+                    import tempfile
+                    with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp_file:
+                        tmp_file.write(audio_bytes)
+                        tmp_file_path = tmp_file.name
+                    
+                    groq_client = get_groq_client()
+                    if groq_client:
+                        with open(tmp_file_path, "rb") as audio_file:
+                            transcription = groq_client.client.audio.transcriptions.create(
+                                file=audio_file,
+                                model="whisper-large-v3",
+                                response_format="text"
+                            )
+                        
+                        os.unlink(tmp_file_path)
+                        st.session_state.translator_voice_input = transcription
+                        st.success(f"<i class='fas fa-check-circle'></i> Heard: {transcription}", unsafe_allow_html=True)
+                    else:
+                        os.unlink(tmp_file_path)
+                        
+                except Exception as e:
+                    st.error(f"<i class='fas fa-exclamation-triangle'></i> Error: {str(e)}", unsafe_allow_html=True)
+                    if 'tmp_file_path' in locals():
+                        try:
+                            os.unlink(tmp_file_path)
+                        except:
+                            pass
     
-    with col2:
-        st.markdown("<br>", unsafe_allow_html=True)
-        voice_btn = st.button("🎤 Voice", use_container_width=True, help="Voice input (coming soon)")
-        if voice_btn:
-            st.info("🎤 Voice input coming soon!")
+    # Text input
+    st.markdown("**<i class='fas fa-keyboard'></i> Or Type Your Phrase**", unsafe_allow_html=True)
+    
+    default_text = st.session_state.get('selected_phrase', '') or st.session_state.get('translator_voice_input', '')
+    phrase_input = st.text_area(
+        "Enter phrase to translate",
+        value=default_text,
+        placeholder="Example: Where is the nearest hospital?",
+        height=100,
+        help="Type any phrase you want to translate with cultural context"
+    )
+    
+    # Clear session state after use
+    if 'selected_phrase' in st.session_state:
+        del st.session_state.selected_phrase
+    if 'translator_voice_input' in st.session_state and phrase_input != default_text:
+        del st.session_state.translator_voice_input
     
     translate_button = st.button(
         "🌍 Translate with Cultural Context",
@@ -194,11 +242,17 @@ def show_culture_translator():
                 </div>
             """, unsafe_allow_html=True)
             
-            # Audio playback
-            if result.audio_data:
-                st.audio(result.audio_data, format='audio/mp3')
-            else:
-                st.info("🔇 Audio generation unavailable for this language")
+            # Audio playback - Generate TTS
+            st.markdown("**<i class='fas fa-volume-up'></i> Listen to Translation**", unsafe_allow_html=True)
+            
+            try:
+                audio_data = text_to_speech(result.translated_text, result.target_language)
+                if audio_data:
+                    st.audio(audio_data, format='audio/mp3')
+                else:
+                    st.info("<i class='fas fa-info-circle'></i> Audio unavailable for this language", unsafe_allow_html=True)
+            except Exception as e:
+                st.warning(f"<i class='fas fa-exclamation-triangle'></i> Could not generate audio: {str(e)}", unsafe_allow_html=True)
             
             # Tone guidance
             with st.expander("🎭 How to Say It (Tone & Etiquette)", expanded=True):
