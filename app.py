@@ -912,14 +912,26 @@ def show_sos_modal():
         
         st.markdown('</div>', unsafe_allow_html=True)
 
-# Scam Price Checker - FIXED
+# Scam Price Checker - SMART VERSION
 def show_scam_checker():
+    import re
     data = load_safety_data()
     profile = st.session_state.profile
     country = profile.get('destination_country', 'India')
     city = profile.get('destination_city', 'Delhi')
     
-    # Initialize relevant BEFORE any conditional checks - FIX FOR UnboundLocalError
+    # Price reference data by country
+    PRICE_THRESHOLDS = {
+        "India": {"currency": "₹", "auto_normal": 150, "auto_high": 300, "taxi_normal": 200, "taxi_high": 400},
+        "Thailand": {"currency": "฿", "auto_normal": 100, "auto_high": 200, "taxi_normal": 150, "taxi_high": 300},
+        "Mexico": {"currency": "$", "auto_normal": 10, "auto_high": 25, "taxi_normal": 15, "taxi_high": 40},
+        "USA": {"currency": "$", "auto_normal": 15, "auto_high": 40, "taxi_normal": 25, "taxi_high": 60},
+        "Brazil": {"currency": "R$", "auto_normal": 20, "auto_high": 50, "taxi_normal": 30, "taxi_high": 80}
+    }
+    
+    thresholds = PRICE_THRESHOLDS.get(country, PRICE_THRESHOLDS["India"])
+    currency = thresholds["currency"]
+    
     scams = data.get("transport_scams", [])
     relevant = [s for s in scams if s.get("country") == country]
     
@@ -928,32 +940,68 @@ def show_scam_checker():
     st.markdown(f'<p style="color:#92400e;font-size:0.85rem;">Currently in: <strong>{city}, {country}</strong></p>', unsafe_allow_html=True)
     
     query = st.text_input("What are they charging you?", 
-        placeholder=f"e.g., Auto driver wants ₹500 from airport to hotel",
+        placeholder=f"e.g., Auto wants {currency}500 or Taxi charging {currency}1000",
         label_visibility="collapsed")
     
     if query:
-        if "500" in query or "₹500" in query:
-            st.markdown('<div class="price-check">', unsafe_allow_html=True)
-            st.markdown('''<div class="alert-danger">
-            <h4 style="color:#991b1b;margin:0 0 0.5rem 0;font-size:1rem;"><i class="fa-solid fa-circle-exclamation"></i> SCAM ALERT!</h4>
-            <p style="margin:0.3rem 0;font-size:0.85rem;"><strong>They're charging:</strong> ₹500</p>
-            <p style="margin:0.3rem 0;font-size:0.85rem;"><strong>Normal rate:</strong> ₹150-200</p>
-            <p style="margin:0.3rem 0;font-size:0.85rem;"><strong>Overcharge:</strong> 250%!</p>
-            </div>''', unsafe_allow_html=True)
+        # Extract any number from the query
+        numbers = re.findall(r'\d+', query.replace(',', ''))
+        
+        if numbers:
+            amount = int(numbers[0])
+            query_lower = query.lower()
             
-            st.markdown('''<p style="margin-top:0.8rem;font-size:0.85rem;"><strong><i class="fa-solid fa-check"></i> What to do:</strong></p>
-            <ul style="font-size:0.8rem;color:#64748b;margin:0.5rem 0;">
-                <li>Show this screen to the driver</li>
-                <li>Refuse and book Uber/Ola instead</li>
-                <li>Insist on meter usage</li>
-            </ul>''', unsafe_allow_html=True)
+            # Determine service type
+            is_taxi = any(word in query_lower for word in ['taxi', 'cab', 'uber', 'ola', 'grab', 'car'])
+            normal_rate = thresholds["taxi_normal"] if is_taxi else thresholds["auto_normal"]
+            high_rate = thresholds["taxi_high"] if is_taxi else thresholds["auto_high"]
+            service_type = "Taxi/Cab" if is_taxi else "Auto/Rickshaw"
+            
+            st.markdown('<div class="price-check">', unsafe_allow_html=True)
+            
+            if amount > high_rate * 2:
+                # Definite scam - more than 2x high rate
+                overcharge_pct = int((amount / normal_rate - 1) * 100)
+                st.markdown(f'''<div class="alert-danger">
+                <h4 style="color:#991b1b;margin:0 0 0.5rem 0;font-size:1rem;"><i class="fa-solid fa-circle-exclamation"></i> SCAM ALERT!</h4>
+                <p style="margin:0.3rem 0;font-size:0.85rem;"><strong>They're charging:</strong> {currency}{amount}</p>
+                <p style="margin:0.3rem 0;font-size:0.85rem;"><strong>Normal {service_type} rate:</strong> {currency}{normal_rate}-{high_rate}</p>
+                <p style="margin:0.3rem 0;font-size:0.85rem;"><strong>Overcharge:</strong> ~{overcharge_pct}%!</p>
+                </div>''', unsafe_allow_html=True)
+                
+                st.markdown(f'''<p style="margin-top:0.8rem;font-size:0.85rem;"><strong><i class="fa-solid fa-check"></i> What to do:</strong></p>
+                <ul style="font-size:0.8rem;color:#64748b;margin:0.5rem 0;">
+                    <li>Show this screen to the driver</li>
+                    <li>Refuse and use app-based rides instead</li>
+                    <li>Insist on meter usage</li>
+                    <li>Walk away and find another option</li>
+                </ul>''', unsafe_allow_html=True)
+                
+            elif amount > high_rate:
+                # Suspicious - above high rate
+                st.markdown(f'''<div class="alert-danger" style="background:linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);border-color:#f59e0b;">
+                <h4 style="color:#92400e;margin:0 0 0.5rem 0;font-size:1rem;"><i class="fa-solid fa-triangle-exclamation"></i> SUSPICIOUS PRICE</h4>
+                <p style="margin:0.3rem 0;font-size:0.85rem;color:#92400e;"><strong>They're charging:</strong> {currency}{amount}</p>
+                <p style="margin:0.3rem 0;font-size:0.85rem;color:#92400e;"><strong>Normal {service_type} rate:</strong> {currency}{normal_rate}-{high_rate}</p>
+                <p style="margin:0.3rem 0;font-size:0.85rem;color:#92400e;">This seems high. Negotiate or check distance.</p>
+                </div>''', unsafe_allow_html=True)
+                
+            else:
+                # Fair price
+                st.markdown(f'''<div class="alert-success">
+                <h4 style="color:#065f46;margin:0 0 0.5rem 0;font-size:1rem;"><i class="fa-solid fa-check-circle"></i> FAIR PRICE</h4>
+                <p style="margin:0.3rem 0;font-size:0.85rem;"><strong>They're charging:</strong> {currency}{amount}</p>
+                <p style="margin:0.3rem 0;font-size:0.85rem;"><strong>Normal {service_type} rate:</strong> {currency}{normal_rate}-{high_rate}</p>
+                <p style="margin:0.3rem 0;font-size:0.85rem;">This price looks reasonable!</p>
+                </div>''', unsafe_allow_html=True)
+            
             st.markdown('</div>', unsafe_allow_html=True)
         else:
             st.markdown('<div class="price-check">', unsafe_allow_html=True)
-            st.markdown('<p style="color:#64748b;font-size:0.85rem;">Enter the amount to check if it\'s a fair price...</p>', unsafe_allow_html=True)
+            st.markdown(f'<p style="color:#64748b;font-size:0.85rem;">Please include an amount (e.g., "{currency}300" or "300 rupees")</p>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
     
-    # Show common scams - now relevant is always defined
+    # Show common scams
     if relevant:
         st.markdown(f'<p style="font-weight:600;margin-top:1rem;font-size:0.9rem;"><i class="fa-solid fa-triangle-exclamation"></i> Common Scams in {city}:</p>', unsafe_allow_html=True)
         for scam in relevant[:3]:
@@ -1331,3 +1379,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
