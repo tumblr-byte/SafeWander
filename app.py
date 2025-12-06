@@ -6,10 +6,10 @@ from PIL import Image, ImageDraw, ImageFont
 import easyocr
 from deep_translator import GoogleTranslator
 from gtts import gTTS
-import speech_recognition as sr
 import tempfile
 import io
 import numpy as np
+from audiorecorder import audiorecorder
 
 # Page config
 st.set_page_config(
@@ -409,21 +409,30 @@ def text_to_speech(text, lang='en'):
     except Exception as e:
         return None
 
-# Speech Recognition
-def recognize_speech(language='en'):
+# Speech Recognition using Groq Whisper
+def transcribe_audio(audio_bytes, language='en'):
+    """Transcribe audio using Groq Whisper API"""
     try:
-        recognizer = sr.Recognizer()
-        with sr.Microphone() as source:
-            st.info("🎤 Listening... Speak now!")
-            recognizer.adjust_for_ambient_noise(source, duration=0.5)
-            audio = recognizer.listen(source, timeout=5, phrase_time_limit=10)
-            
-        text = recognizer.recognize_google(audio, language=language)
-        return text
-    except sr.WaitTimeoutError:
-        return "⏱️ No speech detected"
-    except sr.UnknownValueError:
-        return "❌ Could not understand audio"
+        groq_client = init_groq()
+        if not groq_client:
+            return "⚠️ Voice recognition unavailable"
+        
+        # Save audio to temp file
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as fp:
+            fp.write(audio_bytes)
+            temp_path = fp.name
+        
+        # Transcribe using Groq Whisper
+        with open(temp_path, 'rb') as audio_file:
+            transcription = groq_client.audio.transcriptions.create(
+                file=audio_file,
+                model="whisper-large-v3",
+                language=language
+            )
+        
+        os.unlink(temp_path)
+        return transcription.text
+    
     except Exception as e:
         return f"❌ Error: {str(e)}"
 
@@ -608,56 +617,112 @@ def main():
         
         with col1:
             st.markdown('<div class="voice-side tourist">', unsafe_allow_html=True)
-            st.markdown('<div class="voice-title"><i class="fas fa-user"></i> Tourist Side (English)</div>', unsafe_allow_html=True)
+            st.markdown('<div class="voice-title"><i class="fas fa-user"></i> Tourist (English)</div>', unsafe_allow_html=True)
             
-            if st.button("🎤 Speak English", key="tourist_speak", use_container_width=True):
-                tourist_text = recognize_speech('en-US')
-                st.session_state.tourist_text = tourist_text
-                st.info(f"You said: **{tourist_text}**")
+            st.write("**🎤 Record your voice:**")
+            tourist_audio = audiorecorder("Click to Record", "Click to Stop")
             
-            if 'tourist_text' in st.session_state and st.session_state.tourist_text:
-                if st.button(f"🔊 Translate to {country} Language", key="trans_to_local", use_container_width=True):
-                    try:
-                        translator = GoogleTranslator(source='en', target=local_lang)
-                        translated = translator.translate(st.session_state.tourist_text)
-                        st.success(f"**Translation:** {translated}")
+            if len(tourist_audio) > 0:
+                st.audio(tourist_audio.export().read())
+                
+                if st.button("📝 Transcribe & Translate", key="trans_tourist", use_container_width=True):
+                    with st.spinner("Processing..."):
+                        # Get audio bytes
+                        audio_bytes = tourist_audio.export().read()
                         
-                        audio_file = text_to_speech(translated, local_lang)
-                        if audio_file:
-                            st.audio(audio_file, autoplay=True)
-                    except Exception as e:
-                        st.error(f"Error: {str(e)}")
+                        # Transcribe
+                        text = transcribe_audio(audio_bytes, 'en')
+                        st.info(f"**You said:** {text}")
+                        
+                        if text and not text.startswith("❌") and not text.startswith("⚠️"):
+                            # Translate
+                            try:
+                                translator = GoogleTranslator(source='en', target=local_lang)
+                                translated = translator.translate(text)
+                                st.success(f"**Translation ({country}):** {translated}")
+                                
+                                # Generate audio
+                                audio_file = text_to_speech(translated, local_lang)
+                                if audio_file:
+                                    st.audio(audio_file, autoplay=True)
+                                    st.caption("🔊 Play this for the local person")
+                            except Exception as e:
+                                st.error(f"Translation error: {str(e)}")
+            else:
+                st.info("👆 Click the button above to start recording")
             
             st.markdown('</div>', unsafe_allow_html=True)
         
         with col2:
             st.markdown('<div class="voice-side local">', unsafe_allow_html=True)
-            st.markdown(f'<div class="voice-title"><i class="fas fa-user-tie"></i> Local Side ({country})</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="voice-title"><i class="fas fa-user-tie"></i> Local ({country})</div>', unsafe_allow_html=True)
             
-            lang_codes = {"India": "hi-IN", "Thailand": "th-TH", "Mexico": "es-MX", "Brazil": "pt-BR", "USA": "en-US"}
-            local_code = lang_codes.get(country, "hi-IN")
+            st.write(f"**🎤 Record {country} language:**")
+            local_audio = audiorecorder("Click to Record", "Click to Stop", key="local_rec")
             
-            if st.button(f"🎤 Speak {country} Language", key="local_speak", use_container_width=True):
-                local_text = recognize_speech(local_code)
-                st.session_state.local_text = local_text
-                st.info(f"They said: **{local_text}**")
-            
-            if 'local_text' in st.session_state and st.session_state.local_text:
-                if st.button("🔊 Translate to English", key="trans_to_eng", use_container_width=True):
-                    try:
-                        translator = GoogleTranslator(source=local_lang, target='en')
-                        translated = translator.translate(st.session_state.local_text)
-                        st.success(f"**Translation:** {translated}")
+            if len(local_audio) > 0:
+                st.audio(local_audio.export().read())
+                
+                if st.button("📝 Transcribe & Translate", key="trans_local", use_container_width=True):
+                    with st.spinner("Processing..."):
+                        # Get audio bytes
+                        audio_bytes = local_audio.export().read()
                         
-                        audio_file = text_to_speech(translated, 'en')
-                        if audio_file:
-                            st.audio(audio_file, autoplay=True)
-                    except Exception as e:
-                        st.error(f"Error: {str(e)}")
+                        # Transcribe
+                        text = transcribe_audio(audio_bytes, local_lang)
+                        st.info(f"**They said:** {text}")
+                        
+                        if text and not text.startswith("❌") and not text.startswith("⚠️"):
+                            # Translate to English
+                            try:
+                                translator = GoogleTranslator(source=local_lang, target='en')
+                                translated = translator.translate(text)
+                                st.success(f"**Translation (English):** {translated}")
+                                
+                                # Generate audio
+                                audio_file = text_to_speech(translated, 'en')
+                                if audio_file:
+                                    st.audio(audio_file, autoplay=True)
+                                    st.caption("🔊 You'll hear this in English")
+                            except Exception as e:
+                                st.error(f"Translation error: {str(e)}")
+            else:
+                st.info("👆 Click the button above to start recording")
             
             st.markdown('</div>', unsafe_allow_html=True)
         
-        st.info("💡 **How it works:** Tourist speaks English → Translates to local language. Local speaks their language → Translates to English. Both hear audio!")
+        st.markdown("---")
+        st.info("💡 **How it works:** Click record → Speak → Click stop → Click translate. Both sides can communicate without typing!")
+        
+        st.markdown("### 📝 Alternative: Type to Translate")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            tourist_text = st.text_input("Type in English:", key="type_eng")
+            if tourist_text and st.button("🔊 Say in Local Language", key="type_to_local"):
+                try:
+                    translator = GoogleTranslator(source='en', target=local_lang)
+                    translated = translator.translate(tourist_text)
+                    st.success(f"**{country}:** {translated}")
+                    audio = text_to_speech(translated, local_lang)
+                    if audio:
+                        st.audio(audio, autoplay=True)
+                except Exception as e:
+                    st.error(str(e))
+        
+        with col2:
+            local_text = st.text_input(f"Type in {country} language:", key="type_local")
+            if local_text and st.button("🔊 Say in English", key="type_to_eng"):
+                try:
+                    translator = GoogleTranslator(source=local_lang, target='en')
+                    translated = translator.translate(local_text)
+                    st.success(f"**English:** {translated}")
+                    audio = text_to_speech(translated, 'en')
+                    if audio:
+                        st.audio(audio, autoplay=True)
+                except Exception as e:
+                    st.error(str(e))
     
     # Footer
     st.markdown("---")
