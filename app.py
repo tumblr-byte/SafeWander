@@ -10,6 +10,7 @@ import tempfile
 import io
 import numpy as np
 from audiorecorder import audiorecorder
+from datetime import datetime
 
 # Page config
 st.set_page_config(
@@ -46,6 +47,149 @@ st.markdown("""
         font-size: 1.1rem;
         margin-bottom: 3rem;
         font-weight: 500;
+    }
+    
+    /* Chat Container */
+    .chat-container {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        max-height: 600px;
+        overflow-y: auto;
+        margin: 2rem 0;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+    
+    /* Chat Messages */
+    .chat-message {
+        display: flex;
+        margin: 1.5rem 0;
+        animation: slideIn 0.3s ease-out;
+    }
+    
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .chat-message.tourist {
+        justify-content: flex-end;
+    }
+    
+    .chat-message.local {
+        justify-content: flex-start;
+    }
+    
+    .message-bubble {
+        max-width: 70%;
+        padding: 1.2rem 1.5rem;
+        border-radius: 20px;
+        position: relative;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .message-bubble.tourist {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+        border-bottom-right-radius: 5px;
+    }
+    
+    .message-bubble.local {
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        color: white;
+        border-bottom-left-radius: 5px;
+    }
+    
+    .message-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+        font-weight: 700;
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+    
+    .message-original {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.8rem;
+        line-height: 1.5;
+    }
+    
+    .message-translation {
+        font-size: 0.95rem;
+        padding-top: 0.8rem;
+        border-top: 1px solid rgba(255,255,255,0.3);
+        font-style: italic;
+        opacity: 0.95;
+    }
+    
+    .message-time {
+        font-size: 0.75rem;
+        margin-top: 0.5rem;
+        opacity: 0.7;
+    }
+    
+    /* Input Controls */
+    .input-section {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        margin: 2rem 0;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        border: 2px solid #e2e8f0;
+    }
+    
+    .input-section.tourist {
+        border-left: 6px solid #3b82f6;
+    }
+    
+    .input-section.local {
+        border-left: 6px solid #8b5cf6;
+    }
+    
+    .section-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: #1e293b;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .input-mode-toggle {
+        display: flex;
+        gap: 1rem;
+        margin: 1rem 0;
+        padding: 0.5rem;
+        background: #f1f5f9;
+        border-radius: 12px;
+    }
+    
+    .mode-btn {
+        flex: 1;
+        padding: 0.8rem;
+        border-radius: 8px;
+        border: 2px solid transparent;
+        background: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 600;
+        text-align: center;
+    }
+    
+    .mode-btn.active {
+        border-color: #3b82f6;
+        background: #eff6ff;
+        color: #1e40af;
     }
     
     /* Threat level badges */
@@ -150,36 +294,6 @@ st.markdown("""
         margin-bottom: 0.5rem;
     }
     
-    /* Voice chat interface */
-    .voice-container {
-        display: flex;
-        gap: 2rem;
-        margin: 2rem 0;
-    }
-    
-    .voice-side {
-        flex: 1;
-        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-        padding: 2rem;
-        border-radius: 16px;
-        border: 2px solid #cbd5e1;
-    }
-    
-    .voice-side.tourist {
-        border-left: 6px solid #3b82f6;
-    }
-    
-    .voice-side.local {
-        border-left: 6px solid #8b5cf6;
-    }
-    
-    .voice-title {
-        font-size: 1.3rem;
-        font-weight: 700;
-        margin-bottom: 1rem;
-        color: #1e293b;
-    }
-    
     /* Buttons */
     .stButton>button {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -223,6 +337,12 @@ st.markdown("""
     .fas, .fa {
         margin-right: 0.5rem;
     }
+    
+    /* Audio player styling */
+    audio {
+        width: 100%;
+        margin: 0.5rem 0;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -231,6 +351,12 @@ if 'chat_history' not in st.session_state:
     st.session_state.chat_history = []
 if 'current_country' not in st.session_state:
     st.session_state.current_country = "India"
+if 'voice_messages' not in st.session_state:
+    st.session_state.voice_messages = []
+if 'tourist_mode' not in st.session_state:
+    st.session_state.tourist_mode = "voice"
+if 'local_mode' not in st.session_state:
+    st.session_state.local_mode = "voice"
 
 # Load dataset
 @st.cache_data
@@ -274,7 +400,7 @@ def search_safety_data(query, country, data):
     
     return results
 
-# AI Advisor with BETTER formatting
+# AI Advisor
 def get_ai_advice(query, country, groq_client, safety_data):
     relevant_info = search_safety_data(query, country, safety_data)
     
@@ -348,7 +474,7 @@ Based on {country} rates, verify the price against typical fares. Use ride apps 
     except Exception as e:
         return f"<div class='quick-answer'>Error: {str(e)}</div>"
 
-# Visual Translation - FIXED
+# Visual Translation
 def translate_image_text(image, source_lang='hi', target_lang='en'):
     try:
         reader = easyocr.Reader([source_lang, 'en'], gpu=False)
@@ -417,12 +543,10 @@ def transcribe_audio(audio_bytes, language='en'):
         if not groq_client:
             return "⚠️ Voice recognition unavailable"
         
-        # Save audio to temp file
         with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as fp:
             fp.write(audio_bytes)
             temp_path = fp.name
         
-        # Transcribe using Groq Whisper
         with open(temp_path, 'rb') as audio_file:
             transcription = groq_client.audio.transcriptions.create(
                 file=audio_file,
@@ -436,25 +560,75 @@ def transcribe_audio(audio_bytes, language='en'):
     except Exception as e:
         return f"❌ Error: {str(e)}"
 
+# Add message to chat
+def add_message(speaker, original_text, translated_text, original_lang, translated_lang):
+    message = {
+        "speaker": speaker,
+        "original": original_text,
+        "translated": translated_text,
+        "original_lang": original_lang,
+        "translated_lang": translated_lang,
+        "time": datetime.now().strftime("%I:%M %p"),
+        "audio_original": text_to_speech(original_text, original_lang),
+        "audio_translated": text_to_speech(translated_text, translated_lang)
+    }
+    st.session_state.voice_messages.append(message)
+
+# Display chat messages
+def display_chat():
+    if not st.session_state.voice_messages:
+        st.markdown("""
+        <div style='text-align: center; padding: 3rem; color: #94a3b8;'>
+            <i class='fas fa-comments' style='font-size: 3rem; margin-bottom: 1rem;'></i>
+            <p style='font-size: 1.2rem;'>No messages yet. Start the conversation!</p>
+        </div>
+        """, unsafe_allow_html=True)
+        return
+    
+    chat_html = '<div class="chat-container">'
+    
+    for msg in st.session_state.voice_messages:
+        speaker_class = "tourist" if msg["speaker"] == "Tourist" else "local"
+        speaker_icon = "fa-user" if msg["speaker"] == "Tourist" else "fa-user-tie"
+        
+        chat_html += f"""
+        <div class="chat-message {speaker_class}">
+            <div class="message-bubble {speaker_class}">
+                <div class="message-header">
+                    <i class="fas {speaker_icon}"></i>
+                    {msg["speaker"]}
+                </div>
+                <div class="message-original">
+                    {msg["original"]}
+                </div>
+                <div class="message-translation">
+                    📝 Translation: {msg["translated"]}
+                </div>
+                <div class="message-time">
+                    <i class="far fa-clock"></i> {msg["time"]}
+                </div>
+            </div>
+        </div>
+        """
+    
+    chat_html += '</div>'
+    st.markdown(chat_html, unsafe_allow_html=True)
+
 # Main App
 def main():
     # Header
     col1, col2, col3 = st.columns([1, 3, 1])
     with col2:
-        if os.path.exists("logo.png"):
-            logo_col1, logo_col2 = st.columns([1, 4])
-            with logo_col1:
-                st.image("logo.png", width=80)
-            with logo_col2:
-                st.markdown('<h1 class="app-title">SafeWander</h1>', unsafe_allow_html=True)
-        else:
-            st.markdown('<h1 class="app-title"><i class="fas fa-shield-alt"></i> SafeWander</h1>', unsafe_allow_html=True)
+        st.markdown('<h1 class="app-title"><i class="fas fa-shield-alt"></i> SafeWander</h1>', unsafe_allow_html=True)
     
     st.markdown('<p class="subtitle">AI-Powered Travel Safety Companion</p>', unsafe_allow_html=True)
     
     # Initialize
     safety_data = load_safety_data()
     groq_client = init_groq()
+    
+    # Language mapping
+    lang_map = {"India": "hi", "Thailand": "th", "Mexico": "es", "Brazil": "pt", "USA": "en"}
     
     # Sidebar
     with st.sidebar:
@@ -467,6 +641,7 @@ def main():
             label_visibility="collapsed"
         )
         st.session_state.current_country = country
+        local_lang = lang_map.get(country, "hi")
         
         st.markdown("---")
         st.markdown("### <i class='fas fa-phone-alt'></i> Emergency", unsafe_allow_html=True)
@@ -474,12 +649,17 @@ def main():
         emergency_nums = safety_data.get("emergency_numbers", {}).get(country, {})
         for service, number in emergency_nums.items():
             st.markdown(f'<div class="emergency-box"><strong>{service.title()}</strong><br/><span style="font-size:1.2rem">{number}</span></div>', unsafe_allow_html=True)
+        
+        st.markdown("---")
+        if st.button("🗑️ Clear Chat", use_container_width=True):
+            st.session_state.voice_messages = []
+            st.rerun()
     
     # Tabs
     tab1, tab2, tab3 = st.tabs([
         "🤖 AI Advisor", 
         "📸 Translator", 
-        "🎤 Voice Chat"
+        "💬 Voice Chat"
     ])
     
     # TAB 1: AI Advisor
@@ -507,7 +687,6 @@ def main():
                             "country": country
                         })
         
-        # Display responses
         if st.session_state.chat_history:
             st.markdown("---")
             for chat in reversed(st.session_state.chat_history[-2:]):
@@ -562,176 +741,49 @@ def main():
             except Exception as e:
                 st.error(f"Error processing image: {str(e)}")
     
-    # TAB 3: Voice Chat
+    # TAB 3: Enhanced Voice Chat
     with tab3:
         st.markdown('<div class="feature-box">', unsafe_allow_html=True)
-        st.markdown("#### <i class='fas fa-comments'></i> Voice Communication Bridge", unsafe_allow_html=True)
-        st.markdown("Real-time voice translation between tourist and local")
+        st.markdown("#### <i class='fas fa-comments'></i> Real-Time Voice Chat", unsafe_allow_html=True)
+        st.markdown(f"Live conversation bridge: **English** ↔ **{country} Language**")
         st.markdown('</div>', unsafe_allow_html=True)
         
-        # Emergency phrases first
-        st.markdown("### <i class='fas fa-exclamation-triangle'></i> Emergency Phrases", unsafe_allow_html=True)
-        
-        emergency_phrases = {
-            "India": [
-                ("Help!", "Madad karo!", "hi"),
-                ("Call police!", "Police bulao!", "hi"),
-                ("I need doctor", "Doctor chahiye", "hi"),
-                ("Leave me alone!", "Chod do mujhe!", "hi")
-            ],
-            "Thailand": [
-                ("Help!", "Chuay duay!", "th"),
-                ("Call police!", "Riak tamruat!", "th")
-            ],
-            "Mexico": [
-                ("Help!", "¡Ayuda!", "es"),
-                ("Call police!", "¡Llama policía!", "es")
-            ],
-            "Brazil": [
-                ("Help!", "Socorro!", "pt"),
-                ("Call police!", "Chame polícia!", "pt")
-            ],
-            "USA": [
-                ("Call 911", "Call 911", "en")
-            ]
-        }
-        
-        phrases = emergency_phrases.get(country, [])
-        cols = st.columns(2)
-        for i, (english, local, lang) in enumerate(phrases):
-            with cols[i % 2]:
-                if st.button(f"🔊 {english}", key=f"emg_{i}", use_container_width=True):
-                    audio_file = text_to_speech(local, lang)
-                    if audio_file:
-                        st.audio(audio_file, autoplay=True)
-                        st.success(f"**Says:** {local}")
+        # Display chat history
+        display_chat()
         
         st.markdown("---")
-        st.markdown("### <i class='fas fa-exchange-alt'></i> Two-Way Voice Translation", unsafe_allow_html=True)
         
-        # Language mapping
-        lang_map = {"India": "hi", "Thailand": "th", "Mexico": "es", "Brazil": "pt", "USA": "en"}
-        local_lang = lang_map.get(country, "hi")
-        
+        # Input sections
         col1, col2 = st.columns(2)
         
+        # TOURIST SIDE
         with col1:
-            st.markdown('<div class="voice-side tourist">', unsafe_allow_html=True)
-            st.markdown('<div class="voice-title"><i class="fas fa-user"></i> Tourist (English)</div>', unsafe_allow_html=True)
+            st.markdown('<div class="input-section tourist">', unsafe_allow_html=True)
+            st.markdown('<div class="section-title"><i class="fas fa-user"></i> Tourist (English)</div>', unsafe_allow_html=True)
             
-            st.write("**🎤 Record your voice:**")
-            tourist_audio = audiorecorder("Click to Record", "Click to Stop")
+            # Mode selector
+            tourist_col1, tourist_col2 = st.columns(2)
+            with tourist_col1:
+                if st.button("🎤 Voice Mode", key="tourist_voice_btn", use_container_width=True):
+                    st.session_state.tourist_mode = "voice"
+            with tourist_col2:
+                if st.button("⌨️ Text Mode", key="tourist_text_btn", use_container_width=True):
+                    st.session_state.tourist_mode = "text"
             
-            if len(tourist_audio) > 0:
-                st.audio(tourist_audio.export().read())
+            st.markdown(f"**Mode:** {'🎤 Voice' if st.session_state.tourist_mode == 'voice' else '⌨️ Text'}")
+            
+            if st.session_state.tourist_mode == "voice":
+                st.write("**Record your message:**")
+                tourist_audio = audiorecorder("Start Recording", "Stop Recording", key="tourist_audio")
                 
-                if st.button("📝 Transcribe & Translate", key="trans_tourist", use_container_width=True):
-                    with st.spinner("Processing..."):
-                        # Get audio bytes
-                        audio_bytes = tourist_audio.export().read()
-                        
-                        # Transcribe
-                        text = transcribe_audio(audio_bytes, 'en')
-                        st.info(f"**You said:** {text}")
-                        
-                        if text and not text.startswith("❌") and not text.startswith("⚠️"):
-                            # Translate
-                            try:
-                                translator = GoogleTranslator(source='en', target=local_lang)
-                                translated = translator.translate(text)
-                                st.success(f"**Translation ({country}):** {translated}")
-                                
-                                # Generate audio
-                                audio_file = text_to_speech(translated, local_lang)
-                                if audio_file:
-                                    st.audio(audio_file, autoplay=True)
-                                    st.caption("🔊 Play this for the local person")
-                            except Exception as e:
-                                st.error(f"Translation error: {str(e)}")
-            else:
-                st.info("👆 Click the button above to start recording")
-            
-            st.markdown('</div>', unsafe_allow_html=True)
-        
-        with col2:
-            st.markdown('<div class="voice-side local">', unsafe_allow_html=True)
-            st.markdown(f'<div class="voice-title"><i class="fas fa-user-tie"></i> Local ({country})</div>', unsafe_allow_html=True)
-            
-            st.write(f"**🎤 Record {country} language:**")
-            local_audio = audiorecorder("Click to Record", "Click to Stop", key="local_rec")
-            
-            if len(local_audio) > 0:
-                st.audio(local_audio.export().read())
-                
-                if st.button("📝 Transcribe & Translate", key="trans_local", use_container_width=True):
-                    with st.spinner("Processing..."):
-                        # Get audio bytes
-                        audio_bytes = local_audio.export().read()
-                        
-                        # Transcribe
-                        text = transcribe_audio(audio_bytes, local_lang)
-                        st.info(f"**They said:** {text}")
-                        
-                        if text and not text.startswith("❌") and not text.startswith("⚠️"):
-                            # Translate to English
-                            try:
-                                translator = GoogleTranslator(source=local_lang, target='en')
-                                translated = translator.translate(text)
-                                st.success(f"**Translation (English):** {translated}")
-                                
-                                # Generate audio
-                                audio_file = text_to_speech(translated, 'en')
-                                if audio_file:
-                                    st.audio(audio_file, autoplay=True)
-                                    st.caption("🔊 You'll hear this in English")
-                            except Exception as e:
-                                st.error(f"Translation error: {str(e)}")
-            else:
-                st.info("👆 Click the button above to start recording")
-            
-            st.markdown('</div>', unsafe_allow_html=True)
-        
-        st.markdown("---")
-        st.info("💡 **How it works:** Click record → Speak → Click stop → Click translate. Both sides can communicate without typing!")
-        
-        st.markdown("### 📝 Alternative: Type to Translate")
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            tourist_text = st.text_input("Type in English:", key="type_eng")
-            if tourist_text and st.button("🔊 Say in Local Language", key="type_to_local"):
-                try:
-                    translator = GoogleTranslator(source='en', target=local_lang)
-                    translated = translator.translate(tourist_text)
-                    st.success(f"**{country}:** {translated}")
-                    audio = text_to_speech(translated, local_lang)
-                    if audio:
-                        st.audio(audio, autoplay=True)
-                except Exception as e:
-                    st.error(str(e))
-        
-        with col2:
-            local_text = st.text_input(f"Type in {country} language:", key="type_local")
-            if local_text and st.button("🔊 Say in English", key="type_to_eng"):
-                try:
-                    translator = GoogleTranslator(source=local_lang, target='en')
-                    translated = translator.translate(local_text)
-                    st.success(f"**English:** {translated}")
-                    audio = text_to_speech(translated, 'en')
-                    if audio:
-                        st.audio(audio, autoplay=True)
-                except Exception as e:
-                    st.error(str(e))
-    
-    # Footer
-    st.markdown("---")
-    st.markdown("""
-    <div style='text-align: center; color: #94a3b8; padding: 1.5rem;'>
-        <p><strong>SafeWander</strong> - VisaVerse AI Hackathon 2024</p>
-        <p>Stay safe. Travel fearlessly. 🌍</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-if __name__ == "__main__":
-    main()
+                if len(tourist_audio) > 0:
+                    st.audio(tourist_audio.export().read())
+                    
+                    if st.button("🚀 Send Voice", key="send_tourist_voice", use_container_width=True):
+                        with st.spinner("Processing..."):
+                            audio_bytes = tourist_audio.export().read()
+                            original_text = transcribe_audio(audio_bytes, 'en')
+                            
+                            if original_text and not original_text.startswith(("❌", "⚠️")):
+                                try:
+                                    translator = Google
