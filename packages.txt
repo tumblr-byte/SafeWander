@@ -1,7 +1,12 @@
 tesseract-ocr
 tesseract-ocr-eng
-tesseract-ocr-jpn
 tesseract-ocr-hin
 tesseract-ocr-spa
 tesseract-ocr-fra
+tesseract-ocr-deu
+tesseract-ocr-jpn
+tesseract-ocr-chi-sim
+tesseract-ocr-ara
+tesseract-ocr-rus
+tesseract-ocr-tha
 ffmpeg

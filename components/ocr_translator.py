@@ -30,24 +30,34 @@ def preprocess_image(image: Image.Image) -> Image.Image:
     Returns:
         Preprocessed PIL Image
     """
-    # Convert to RGB if necessary
-    if image.mode != 'RGB':
-        image = image.convert('RGB')
+    # Convert to grayscale for better OCR
+    image = image.convert('L')
     
-    # Resize if too large (max 2000px on longest side)
-    max_size = 2000
+    # Resize if too small (min 1000px on longest side for better accuracy)
+    min_size = 1000
+    if max(image.size) < min_size:
+        ratio = min_size / max(image.size)
+        new_size = tuple(int(dim * ratio) for dim in image.size)
+        image = image.resize(new_size, Image.Resampling.LANCZOS)
+    
+    # Resize if too large (max 3000px on longest side)
+    max_size = 3000
     if max(image.size) > max_size:
         ratio = max_size / max(image.size)
         new_size = tuple(int(dim * ratio) for dim in image.size)
         image = image.resize(new_size, Image.Resampling.LANCZOS)
     
-    # Enhance contrast
+    # Enhance contrast significantly for better text detection
     enhancer = ImageEnhance.Contrast(image)
-    image = enhancer.enhance(1.5)
+    image = enhancer.enhance(2.0)
     
     # Enhance sharpness
     enhancer = ImageEnhance.Sharpness(image)
-    image = enhancer.enhance(1.5)
+    image = enhancer.enhance(2.0)
+    
+    # Enhance brightness
+    enhancer = ImageEnhance.Brightness(image)
+    image = enhancer.enhance(1.2)
     
     return image
 
@@ -66,15 +76,34 @@ def extract_text_from_image(image: Image.Image) -> Tuple[str, str]:
         # Preprocess image
         processed_image = preprocess_image(image)
         
-        # Extract text with Tesseract
-        # Try multiple languages
-        custom_config = r'--oem 3 --psm 6'
-        text = pytesseract.image_to_string(processed_image, config=custom_config)
+        # Try multiple language combinations for better accuracy
+        # Include common languages: English, Hindi, Spanish, French, German, Japanese, Chinese, Arabic
+        lang_configs = [
+            'eng+hin+spa+fra+deu',  # English + Hindi + Spanish + French + German
+            'eng+jpn+chi_sim+ara',   # English + Japanese + Chinese + Arabic
+            'eng',                    # English only as fallback
+        ]
         
-        # Clean up text
-        text = text.strip()
+        best_text = ""
+        best_confidence = 0
         
-        if not text or len(text) < 3:
+        for lang_config in lang_configs:
+            try:
+                # Extract text with specific language configuration
+                custom_config = f'--oem 3 --psm 6 -l {lang_config}'
+                text = pytesseract.image_to_string(processed_image, config=custom_config)
+                text = text.strip()
+                
+                # Use the result with most text extracted
+                if len(text) > len(best_text):
+                    best_text = text
+                    
+            except Exception:
+                continue
+        
+        text = best_text
+        
+        if not text or len(text) < 2:
             return "", "unknown"
         
         # Detect language
@@ -87,7 +116,7 @@ def extract_text_from_image(image: Image.Image) -> Tuple[str, str]:
         return text, language
         
     except Exception as e:
-        st.error(f"❌ OCR Error: {str(e)}")
+        st.error(f"<i class='fas fa-exclamation-triangle'></i> OCR Error: {str(e)}", unsafe_allow_html=True)
         return "", "unknown"
 
 
