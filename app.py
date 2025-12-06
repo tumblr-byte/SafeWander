@@ -1337,7 +1337,7 @@ def show_dashboard():
         st.session_state.sos_active = True
         st.rerun()
     
-    # AI Assistant section
+    # AI Assistant section with RAG
     st.markdown("---")
     st.markdown('<div class="section-header"><i class="fa-solid fa-robot"></i> AI Safety Assistant</div>', unsafe_allow_html=True)
     
@@ -1351,22 +1351,86 @@ def show_dashboard():
     if st.button("Get Personalized Advice", use_container_width=True):
         if question:
             groq_client = init_groq()
-            with st.spinner("Analyzing..."):
+            with st.spinner("Analyzing with local knowledge..."):
                 if groq_client:
                     try:
+                        # RAG: Build context from dataset.json
+                        country = profile.get('destination_country', 'India')
+                        city = profile.get('destination_city', 'Delhi')
+                        
+                        # Get relevant scams for this country
+                        scams = [s for s in data.get("transport_scams", []) if s.get("country") == country]
+                        scam_context = "\n".join([f"- {s.get('scam_type')}: {s.get('description')} Safety: {s.get('safety_advice', '')}" for s in scams[:3]])
+                        
+                        # Get harassment safety info
+                        harassment = data.get("harassment_safety", [])
+                        harassment_context = "\n".join([f"- {h.get('situation')}: {', '.join(h.get('immediate_actions', [])[:3])}" for h in harassment[:2]])
+                        
+                        # Get cultural guidelines
+                        cultural = next((c for c in data.get("cultural_guidelines", []) if c.get("country") == country), {})
+                        cultural_context = f"Dress: {cultural.get('dress', 'N/A')}. Gestures: {cultural.get('gestures', 'N/A')}. Etiquette: {cultural.get('etiquette', 'N/A')}"
+                        
+                        # Get emergency numbers
+                        emergency = data.get("emergency_numbers", {}).get(country, {})
+                        emergency_context = ", ".join([f"{k}: {v}" for k, v in emergency.items()])
+                        
+                        # Get area warnings
+                        area_warnings = next((a for a in data.get("area_specific_warnings", []) if a.get("location") == city), {})
+                        area_context = f"Avoid: {area_warnings.get('avoid_areas', 'N/A')}. Safe areas: {area_warnings.get('safe_areas', 'N/A')}"
+                        
+                        # Get food safety
+                        food = next((f for f in data.get("food_safety", []) if f.get("country") == country), {})
+                        food_context = food.get("guidelines", "Be cautious with street food")
+                        
+                        # Build RAG context
+                        rag_context = f"""
+LOCAL SAFETY KNOWLEDGE FOR {city}, {country}:
+
+COMMON SCAMS:
+{scam_context}
+
+HARASSMENT SAFETY:
+{harassment_context}
+
+CULTURAL GUIDELINES:
+{cultural_context}
+
+EMERGENCY NUMBERS:
+{emergency_context}
+
+AREA SAFETY:
+{area_context}
+
+FOOD SAFETY:
+{food_context}
+"""
+                        
+                        # System prompt with RAG context
+                        system_prompt = f"""You are SafeWander AI, a travel safety expert. 
+
+USER PROFILE:
+- Name: {profile.get('name')}
+- Gender: {profile.get('gender')}
+- Age: {profile.get('age_range')}
+- Location: {city}, {country}
+
+{rag_context}
+
+Use the above local knowledge to provide specific, actionable safety advice. Reference specific scams, emergency numbers, and local tips when relevant. Keep response concise but helpful."""
+
                         response = groq_client.chat.completions.create(
                             messages=[
-                                {"role": "system", "content": f"You are a travel safety expert. User is {profile.get('name')}, {profile.get('gender')}, {profile.get('age_range')}, visiting {profile.get('destination_city')}, {profile.get('destination_country')}. Provide specific, concise safety advice."},
+                                {"role": "system", "content": system_prompt},
                                 {"role": "user", "content": question}
                             ],
                             model="llama-3.3-70b-versatile",
                             temperature=0.6,
-                            max_tokens=300
+                            max_tokens=400
                         )
                         advice = response.choices[0].message.content
                         st.markdown(f'<div class="alert-success">{advice}</div>', unsafe_allow_html=True)
-                    except:
-                        st.error("AI temporarily unavailable. Please try the other features!")
+                    except Exception as e:
+                        st.error(f"AI temporarily unavailable. Please try the other features!")
                 else:
                     st.warning("Add GROQ_API_KEY to Streamlit secrets for AI features")
 
@@ -1379,5 +1443,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
