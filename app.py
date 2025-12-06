@@ -1,459 +1,599 @@
-"""
-SafeWonder - Travel Safety Assistant
-Main application entry point
-"""
-
 import streamlit as st
+import json
 import os
-from pathlib import Path
+from groq import Groq
+from PIL import Image, ImageDraw, ImageFont
+import easyocr
+from googletrans import Translator
+from gtts import gTTS
+import speech_recognition as sr
+import tempfile
+import io
 
-# Import utilities
-from utils.session_manager import initialize_session_state, get_session_value, set_session_value
-from utils.database_loader import load_database, get_country_data
-from utils.groq_client import validate_api_key
+# Page config
+st.set_page_config(
+    page_title="SafeWander - AI Travel Safety Companion",
+    page_icon="🛡️",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-# Import components
-from components.profile_manager import show_onboarding_screen, show_profile_settings
-from components.situation_analyzer_ui import show_situation_analyzer
-from components.culture_translator_ui import show_culture_translator
-from components.ocr_translator_ui import show_ocr_translator
-
-
-def load_custom_css():
-    """Load custom CSS styling"""
-    css = """
-    <style>
-    /* Import Inter font and Font Awesome */
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-    @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
-    
-    :root {
-        --primary: #6366F1;
-        --secondary: #EC4899;
-        --success: #10B981;
-        --warning: #F59E0B;
-        --danger: #EF4444;
-        --background: #0F172A;
-        --surface: #1E293B;
-        --text-primary: #F1F5F9;
-        --text-secondary: #94A3B8;
+# Custom CSS
+st.markdown("""
+<style>
+    .main-header {
+        font-size: 3rem;
+        font-weight: bold;
+        text-align: center;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 0.5rem;
     }
-    
-    /* Global styles */
-    .stApp {
-        font-family: 'Inter', sans-serif;
+    .sub-header {
+        text-align: center;
+        color: #666;
+        font-size: 1.2rem;
+        margin-bottom: 2rem;
     }
-    
-    /* Hide Streamlit branding */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    
-    /* Custom card styling */
-    .custom-card {
-        background: rgba(30, 41, 59, 0.6);
-        backdrop-filter: blur(10px);
-        border-radius: 12px;
-        padding: 24px;
-        margin: 16px 0;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(99, 102, 241, 0.2);
-        transition: all 0.3s ease;
+    .feature-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 2rem;
+        border-radius: 15px;
+        color: white;
+        margin: 1rem 0;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
     }
-    
-    .custom-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 12px rgba(99, 102, 241, 0.2);
+    .warning-box {
+        background-color: #fff3cd;
+        border-left: 5px solid #ffc107;
+        padding: 1rem;
+        border-radius: 5px;
+        margin: 1rem 0;
     }
-    
-    /* Risk score styling */
-    .risk-low {
-        color: #10B981;
-        font-size: 48px;
-        font-weight: 700;
+    .danger-box {
+        background-color: #f8d7da;
+        border-left: 5px solid #dc3545;
+        padding: 1rem;
+        border-radius: 5px;
+        margin: 1rem 0;
     }
-    
-    .risk-medium {
-        color: #F59E0B;
-        font-size: 48px;
-        font-weight: 700;
+    .safe-box {
+        background-color: #d4edda;
+        border-left: 5px solid #28a745;
+        padding: 1rem;
+        border-radius: 5px;
+        margin: 1rem 0;
     }
-    
-    .risk-high {
-        color: #EF4444;
-        font-size: 48px;
-        font-weight: 700;
+    .stButton>button {
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        font-weight: bold;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 25px;
+        font-size: 1rem;
     }
-    
-    /* Emergency button */
     .emergency-button {
-        position: fixed;
-        bottom: 24px;
-        right: 24px;
-        z-index: 1000;
+        background: linear-gradient(90deg, #ff416c 0%, #ff4b2b 100%) !important;
         animation: pulse 2s infinite;
     }
-    
     @keyframes pulse {
-        0%, 100% {
-            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
-        }
-        50% {
-            box-shadow: 0 0 0 20px rgba(239, 68, 68, 0);
-        }
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
     }
-    
-    /* Button styling */
-    .stButton>button {
-        border-radius: 8px;
-        font-weight: 600;
-        transition: all 0.2s ease;
-    }
-    
-    .stButton>button:hover {
-        transform: scale(0.98);
-    }
-    
-    /* Input field styling */
-    .stTextInput>div>div>input,
-    .stTextArea>div>div>textarea {
-        border-radius: 8px;
-        border: 2px solid rgba(99, 102, 241, 0.3);
-        transition: all 0.3s ease;
-    }
-    
-    .stTextInput>div>div>input:focus,
-    .stTextArea>div>div>textarea:focus {
-        border-color: #6366F1;
-        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-    }
-    
-    /* Sidebar styling */
-    [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #1E293B 0%, #0F172A 100%);
-    }
-    
-    /* Logo styling */
-    .logo-container {
-        text-align: center;
-        padding: 20px 0;
-        margin-bottom: 20px;
-    }
-    
-    /* Success animation */
-    @keyframes checkmark {
-        0% {
-            transform: scale(0);
-        }
-        50% {
-            transform: scale(1.2);
-        }
-        100% {
-            transform: scale(1);
-        }
-    }
-    
-    .success-checkmark {
-        animation: checkmark 0.5s ease;
-    }
-    
-    /* Warning banner */
-    .warning-banner {
-        background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(239, 68, 68, 0.2) 100%);
-        border-left: 4px solid #F59E0B;
-        padding: 16px;
-        border-radius: 8px;
-        margin: 16px 0;
-    }
-    
-    /* Info callout */
-    .info-callout {
-        background: rgba(99, 102, 241, 0.1);
-        border-left: 4px solid #6366F1;
-        padding: 16px;
-        border-radius: 8px;
-        margin: 16px 0;
-    }
-    </style>
-    """
-    st.markdown(css, unsafe_allow_html=True)
+</style>
+""", unsafe_allow_html=True)
 
+# Initialize session state
+if 'chat_history' not in st.session_state:
+    st.session_state.chat_history = []
+if 'current_country' not in st.session_state:
+    st.session_state.current_country = "India"
 
-def show_logo():
-    """Display app logo"""
-    logo_path = Path("logo.png")
-    if logo_path.exists():
-        col1, col2, col3 = st.columns([1, 2, 1])
-        with col2:
-            st.image(str(logo_path), use_container_width=True)
-    else:
-        st.markdown("<h1 style='text-align: center; color: #6366F1;'><i class='fas fa-shield-alt'></i> SafeWonder</h1>", unsafe_allow_html=True)
+# Load dataset
+@st.cache_data
+def load_safety_data():
+    # In production, load from dataset.json file
+    # For demo, we'll use the embedded data
+    return {
+        "countries": ["India", "Thailand", "Mexico", "USA", "Brazil"],
+        # ... (full dataset from above)
+    }
 
+# Initialize Groq client
+def init_groq():
+    api_key = st.secrets.get("GROQ_API_KEY", os.getenv("GROQ_API_KEY"))
+    if api_key:
+        return Groq(api_key=api_key)
+    return None
 
-def show_emergency_modal():
-    """Display emergency contacts modal"""
-    country_data = get_session_value('country_data')
+# RAG Search Function
+def search_safety_data(query, country, data):
+    """Search through safety data for relevant information"""
+    query_lower = query.lower()
+    results = []
     
-    if not country_data:
-        st.error("⚠️ Country data not loaded. Please complete onboarding.")
-        return
+    # Search transport scams
+    for scam in data.get("transport_scams", []):
+        if scam.get("country") == country:
+            if any(word in query_lower for word in ["taxi", "driver", "uber", "transport", "price", "fare", "scam"]):
+                results.append({
+                    "type": "transport_scam",
+                    "data": scam
+                })
     
-    st.markdown("### <i class='fas fa-ambulance'></i> Emergency Contacts", unsafe_allow_html=True)
+    # Search harassment safety
+    for safety in data.get("harassment_safety", []):
+        if any(word in query_lower for word in ["follow", "harass", "touch", "stalk", "danger", "help", "emergency"]):
+            results.append({
+                "type": "harassment",
+                "data": safety
+            })
     
-    emergency_numbers = country_data.get('emergency_numbers', {})
+    # Search accommodation
+    for accom in data.get("accommodation_scams", []):
+        if accom.get("country") == country:
+            if any(word in query_lower for word in ["hotel", "accommodation", "stay", "room", "booking"]):
+                results.append({
+                    "type": "accommodation",
+                    "data": accom
+                })
     
-    if emergency_numbers:
-        cols = st.columns(2)
-        idx = 0
-        for service, number in emergency_numbers.items():
-            with cols[idx % 2]:
-                st.markdown(f"""
-                <div class="custom-card">
-                    <h4 style="color: #EF4444; margin: 0;">{service.replace('_', ' ').title()}</h4>
-                    <h2 style="margin: 8px 0;">{number}</h2>
-                    <a href="tel:{number}" style="text-decoration: none;">
-                        <button style="background: #EF4444; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">
-                            📞 Call Now
-                        </button>
-                    </a>
-                </div>
-                """, unsafe_allow_html=True)
-            idx += 1
+    # Search shopping
+    for shop in data.get("shopping_scams", []):
+        if shop.get("country") == country:
+            if any(word in query_lower for word in ["buy", "shop", "price", "gem", "jewelry", "market"]):
+                results.append({
+                    "type": "shopping",
+                    "data": shop
+                })
     
-    # Important locations
-    st.markdown("### <i class='fas fa-map-marker-alt'></i> Important Locations", unsafe_allow_html=True)
+    # Add emergency numbers
+    emergency = data.get("emergency_numbers", {}).get(country, {})
+    if any(word in query_lower for word in ["emergency", "police", "ambulance", "help", "call"]):
+        results.append({
+            "type": "emergency",
+            "data": emergency
+        })
     
-    locations = country_data.get('important_locations', {})
+    # Add price reference
+    prices = data.get("price_reference", {}).get(country, {})
+    if any(word in query_lower for word in ["price", "cost", "how much", "fare", "normal"]):
+        results.append({
+            "type": "price_reference",
+            "data": prices
+        })
     
-    if 'hospitals' in locations and locations['hospitals']:
-        st.markdown("**<i class='fas fa-hospital'></i> Hospitals**", unsafe_allow_html=True)
-        for hospital in locations['hospitals']:
-            st.markdown(f"- **{hospital['name']}**: {hospital.get('contact', 'N/A')}")
-    
-    if 'police_stations' in locations and locations['police_stations']:
-        st.markdown("**<i class='fas fa-shield-alt'></i> Police Stations**", unsafe_allow_html=True)
-        for station in locations['police_stations']:
-            st.markdown(f"- **{station['name']}**: {station.get('contact', 'N/A')}")
-    
-    if 'embassy' in locations and locations['embassy']:
-        st.markdown("**<i class='fas fa-landmark'></i> Embassy Contacts**", unsafe_allow_html=True)
-        for country, info in locations['embassy'].items():
-            st.markdown(f"- **{country.upper()}**: {info.get('contact', 'N/A')}")
-            if 'address' in info:
-                st.markdown(f"  *{info['address']}*")
+    return results
 
+# AI Safety Advisor
+def get_ai_advice(query, country, groq_client, safety_data):
+    """Get AI-powered safety advice using RAG"""
+    
+    # Search relevant data
+    relevant_info = search_safety_data(query, country, safety_data)
+    
+    # Build context for AI
+    context = f"User is in {country}. Query: {query}\n\nRelevant Safety Information:\n"
+    
+    for item in relevant_info[:5]:  # Limit to top 5 results
+        if item["type"] == "transport_scam":
+            data = item["data"]
+            context += f"\nTransport Scam Alert: {data.get('scam_type')}\n"
+            context += f"Normal Rate: {data.get('normal_rate')}\n"
+            context += f"Scam Rate: {data.get('scam_rate')}\n"
+            context += f"Safety Advice: {data.get('safety_advice')}\n"
+            context += f"Threat Level: {data.get('threat_level')}\n"
+        
+        elif item["type"] == "harassment":
+            data = item["data"]
+            context += f"\nHarassment/Safety Protocol:\n"
+            context += f"Situation: {data.get('situation')}\n"
+            context += f"Threat Level: {data.get('threat_level')}\n"
+            actions = data.get('immediate_actions', [])
+            context += f"Actions: {', '.join(actions[:3])}\n"
+        
+        elif item["type"] == "emergency":
+            context += f"\nEmergency Numbers for {country}:\n"
+            for key, value in item["data"].items():
+                context += f"{key}: {value}\n"
+        
+        elif item["type"] == "price_reference":
+            context += f"\nTypical Prices in {country}:\n{item['data']}\n"
+    
+    # Create prompt for Groq
+    system_prompt = """You are SafeWander AI, a travel safety expert. 
+    Provide clear, actionable safety advice to travelers.
+    - Be direct and specific
+    - Highlight scams and dangers clearly
+    - Give step-by-step actions
+    - Include relevant emergency numbers
+    - Use threat levels: LOW, MEDIUM, HIGH
+    - Be empathetic but firm about safety"""
+    
+    user_prompt = f"{context}\n\nBased on this information, provide comprehensive safety advice for the user's query."
+    
+    try:
+        if groq_client:
+            chat_completion = groq_client.chat.completions.create(
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                model="llama-3.3-70b-versatile",
+                temperature=0.7,
+                max_tokens=1000
+            )
+            return chat_completion.choices[0].message.content
+        else:
+            # Fallback response without API
+            return f"⚠️ **Safety Alert for {country}**\n\nBased on available data:\n{context}\n\nPlease set up GROQ_API_KEY for full AI-powered responses."
+    except Exception as e:
+        return f"Error getting AI response: {str(e)}\n\nRelevant info:\n{context}"
 
-def show_navigation():
-    """Display sidebar navigation"""
+# Visual Translation Feature
+def translate_image_text(image, source_lang='hi', target_lang='en'):
+    """Extract text from image and overlay translation"""
+    try:
+        # Initialize OCR and translator
+        reader = easyocr.Reader([source_lang, 'en'])
+        translator = Translator()
+        
+        # Convert PIL image to format easyocr expects
+        img_array = np.array(image)
+        
+        # Extract text with coordinates
+        results = reader.readtext(img_array)
+        
+        # Create a copy of image for drawing
+        translated_img = image.copy()
+        draw = ImageDraw.Draw(translated_img)
+        
+        # Try to load a font, fallback to default
+        try:
+            font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 20)
+        except:
+            font = ImageFont.load_default()
+        
+        translations = []
+        
+        for (bbox, text, prob) in results:
+            if prob > 0.5:  # Only use confident detections
+                # Translate text
+                try:
+                    translated = translator.translate(text, src=source_lang, dest=target_lang)
+                    translated_text = translated.text
+                except:
+                    translated_text = text
+                
+                # Get bounding box coordinates
+                top_left = tuple(map(int, bbox[0]))
+                bottom_right = tuple(map(int, bbox[2]))
+                
+                # Draw semi-transparent rectangle
+                draw.rectangle([top_left, bottom_right], fill=(0, 0, 0, 180), outline=(255, 255, 0, 255), width=2)
+                
+                # Draw translated text
+                draw.text((top_left[0] + 5, top_left[1] + 5), translated_text, fill=(255, 255, 255, 255), font=font)
+                
+                translations.append({
+                    "original": text,
+                    "translated": translated_text,
+                    "confidence": prob
+                })
+        
+        return translated_img, translations
+    
+    except Exception as e:
+        st.error(f"Translation error: {str(e)}")
+        return image, []
+
+# Voice Communication Feature
+def text_to_speech(text, lang='en'):
+    """Convert text to speech"""
+    try:
+        tts = gTTS(text=text, lang=lang, slow=False)
+        fp = tempfile.NamedTemporaryFile(delete=False, suffix='.mp3')
+        tts.save(fp.name)
+        return fp.name
+    except Exception as e:
+        st.error(f"Text-to-speech error: {str(e)}")
+        return None
+
+# Main App
+def main():
+    # Header with logo
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        # Display logo if exists
+        if os.path.exists("logo.png"):
+            st.image("logo.png", width=200)
+    
+    st.markdown('<p class="main-header">🛡️ SafeWander</p>', unsafe_allow_html=True)
+    st.markdown('<p class="sub-header">Your AI Travel Safety Companion - Stay Safe Anywhere</p>', unsafe_allow_html=True)
+    
+    # Initialize
+    safety_data = load_safety_data()
+    groq_client = init_groq()
+    
+    # Sidebar
     with st.sidebar:
-        show_logo()
+        st.header("⚙️ Settings")
+        
+        country = st.selectbox(
+            "📍 Select Country",
+            ["India", "Thailand", "Mexico", "USA", "Brazil"],
+            index=0
+        )
+        st.session_state.current_country = country
         
         st.markdown("---")
+        st.markdown("### 🚨 Emergency Numbers")
+        emergency_nums = safety_data.get("emergency_numbers", {}).get(country, {})
+        for service, number in emergency_nums.items():
+            st.markdown(f"**{service.title()}:** `{number}`")
         
-        # Navigation menu
-        current_page = get_session_value('current_page', 'home')
+        st.markdown("---")
+        st.markdown("### 💡 Quick Safety Tips")
+        st.info("✓ Save emergency numbers\n✓ Share location with trusted contact\n✓ Trust your instincts\n✓ Stay in well-lit areas at night")
+    
+    # Main content tabs
+    tab1, tab2, tab3 = st.tabs(["🤖 AI Safety Advisor", "📸 Visual Translator", "🎤 Voice Bridge"])
+    
+    # TAB 1: AI Safety Advisor
+    with tab1:
+        st.markdown('<div class="feature-card">', unsafe_allow_html=True)
+        st.markdown("### 🤖 AI Safety Advisor")
+        st.markdown("Get instant, context-aware safety advice for any situation")
+        st.markdown('</div>', unsafe_allow_html=True)
         
-        # Navigation items
-        nav_items = [
-            ("home", "fa-home", "Home"),
-            ("analyzer", "fa-exclamation-triangle", "Situation Analyzer"),
-            ("translator", "fa-language", "Polite Translator"),
-            ("ocr", "fa-camera", "OCR Translator"),
-            ("settings", "fa-cog", "Profile Settings"),
-            ("emergency", "fa-ambulance", "Emergency")
-        ]
+        # Example scenarios
+        with st.expander("💡 Example Scenarios to Try"):
+            st.markdown("""
+            - "Driver asking ₹800 from airport to hotel, is this fair?"
+            - "Someone has been following me for 10 minutes, what should I do?"
+            - "Restaurant bill seems too high, is this normal?"
+            - "How safe is it to walk around at night here?"
+            - "What are common scams I should watch out for?"
+            """)
         
-        # Create navigation buttons
-        for page_id, icon, label in nav_items:
-            is_active = current_page == page_id
-            
-            # Display icon and label as markdown above button
-            st.markdown(f"""
-                <div style="margin-bottom: -45px; pointer-events: none;">
-                    <div style="
-                        background: {'#6366F1' if is_active else 'rgba(30, 41, 59, 0.5)'};
-                        border: {'2px solid #6366F1' if is_active else '1px solid rgba(99, 102, 241, 0.3)'};
-                        border-radius: 8px;
-                        padding: 12px 16px;
-                        margin: 4px 0;
-                        backdrop-filter: blur(10px);
-                        transition: all 0.3s ease;
-                    ">
-                        <i class="fas {icon}" style="margin-right: 10px; width: 18px;"></i>
-                        <span style="font-weight: {'600' if is_active else '400'};">{label}</span>
-                    </div>
-                </div>
-            """, unsafe_allow_html=True)
-            
-            # Invisible button for click handling
-            if st.button(label, key=f"nav_{page_id}", use_container_width=True, 
-                        type="primary" if is_active else "secondary"):
-                set_session_value('current_page', page_id)
+        # Chat interface
+        user_query = st.text_area(
+            "Describe your situation or ask a safety question:",
+            placeholder="Example: A taxi driver quoted ₹500 for a 5km trip. Is this fair?",
+            height=100
+        )
+        
+        col1, col2 = st.columns([1, 4])
+        with col1:
+            if st.button("🔍 Get Advice", use_container_width=True):
+                if user_query:
+                    with st.spinner("Analyzing situation and searching safety database..."):
+                        response = get_ai_advice(user_query, country, groq_client, safety_data)
+                        
+                        # Add to chat history
+                        st.session_state.chat_history.append({
+                            "query": user_query,
+                            "response": response,
+                            "country": country
+                        })
+                else:
+                    st.warning("Please enter a question or describe your situation")
+        
+        with col2:
+            if st.button("🗑️ Clear History", use_container_width=True):
+                st.session_state.chat_history = []
                 st.rerun()
         
-        # Hide button text with CSS
-        st.markdown("""
-            <style>
-            [data-testid="stSidebar"] .stButton button {
-                opacity: 0.01;
-                height: 48px;
-                margin-top: -4px;
-            }
-            [data-testid="stSidebar"] .stButton button:hover {
-                opacity: 0.05;
-            }
-            </style>
-        """, unsafe_allow_html=True)
+        # Display chat history
+        if st.session_state.chat_history:
+            st.markdown("---")
+            st.markdown("### 💬 Conversation History")
+            for i, chat in enumerate(reversed(st.session_state.chat_history[-5:])):
+                with st.container():
+                    st.markdown(f"**You asked ({chat['country']}):** {chat['query']}")
+                    
+                    # Determine threat level for styling
+                    if "HIGH" in chat['response'].upper() or "DANGER" in chat['response'].upper():
+                        st.markdown(f'<div class="danger-box">{chat["response"]}</div>', unsafe_allow_html=True)
+                    elif "MEDIUM" in chat['response'].upper() or "WARNING" in chat['response'].upper():
+                        st.markdown(f'<div class="warning-box">{chat["response"]}</div>', unsafe_allow_html=True)
+                    else:
+                        st.markdown(f'<div class="safe-box">{chat["response"]}</div>', unsafe_allow_html=True)
+                    
+                    st.markdown("---")
+    
+    # TAB 2: Visual Translator
+    with tab2:
+        st.markdown('<div class="feature-card">', unsafe_allow_html=True)
+        st.markdown("### 📸 Visual Translator")
+        st.markdown("Translate signs, menus, and notices in real-time")
+        st.markdown('</div>', unsafe_allow_html=True)
+        
+        col1, col2 = st.columns([1, 1])
+        
+        with col1:
+            source_lang = st.selectbox(
+                "Source Language",
+                [("Hindi", "hi"), ("Thai", "th"), ("Spanish", "es"), ("Portuguese", "pt")],
+                format_func=lambda x: x[0]
+            )[1]
+        
+        with col2:
+            target_lang = st.selectbox(
+                "Target Language",
+                [("English", "en"), ("Spanish", "es"), ("French", "fr")],
+                format_func=lambda x: x[0]
+            )[1]
+        
+        uploaded_file = st.file_uploader(
+            "Upload an image of text (sign, menu, notice)",
+            type=['png', 'jpg', 'jpeg']
+        )
+        
+        if uploaded_file:
+            image = Image.open(uploaded_file)
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown("#### Original Image")
+                st.image(image, use_container_width=True)
+            
+            if st.button("🔤 Translate Image", use_container_width=True):
+                with st.spinner("Extracting and translating text..."):
+                    # Note: This requires numpy, add: import numpy as np
+                    try:
+                        import numpy as np
+                        translated_img, translations = translate_image_text(image, source_lang, target_lang)
+                        
+                        with col2:
+                            st.markdown("#### Translated Image")
+                            st.image(translated_img, use_container_width=True)
+                        
+                        if translations:
+                            st.success(f"✅ Found and translated {len(translations)} text blocks")
+                            with st.expander("📝 View Translation Details"):
+                                for i, trans in enumerate(translations, 1):
+                                    st.markdown(f"**{i}.** {trans['original']} → **{trans['translated']}** (confidence: {trans['confidence']:.2%})")
+                        else:
+                            st.warning("No text detected in image. Try a clearer photo.")
+                    except ImportError:
+                        st.error("Please install required packages: `pip install numpy easyocr googletrans==4.0.0rc1 Pillow`")
+                    except Exception as e:
+                        st.error(f"Translation error: {str(e)}")
+    
+    # TAB 3: Voice Bridge
+    with tab3:
+        st.markdown('<div class="feature-card">', unsafe_allow_html=True)
+        st.markdown("### 🎤 Voice Communication Bridge")
+        st.markdown("Speak and translate in real-time for emergency communication")
+        st.markdown('</div>', unsafe_allow_html=True)
+        
+        # Emergency phrases
+        st.markdown("### 🚨 Quick Emergency Phrases")
+        
+        emergency_phrases = {
+            "India": [
+                ("Help!", "Madad karo!", "hi"),
+                ("Call police!", "Police bulao!", "hi"),
+                ("I need a doctor", "Mujhe doctor chahiye", "hi"),
+                ("Leave me alone!", "Mujhe akela chhod do!", "hi"),
+                ("Where is hospital?", "Hospital kahan hai?", "hi")
+            ],
+            "Thailand": [
+                ("Help!", "Chuay duay!", "th"),
+                ("Call police!", "Riak tamruat!", "th"),
+                ("I need a doctor", "Chan tong kan mor", "th"),
+                ("Where is hospital?", "Rong phayaban yoo thi nai?", "th")
+            ],
+            "Mexico": [
+                ("Help!", "¡Ayuda!", "es"),
+                ("Call police!", "¡Llama a la policía!", "es"),
+                ("I need a doctor", "Necesito un médico", "es"),
+                ("Where is hospital?", "¿Dónde está el hospital?", "es")
+            ],
+            "Brazil": [
+                ("Help!", "Socorro!", "pt"),
+                ("Call police!", "Chame a polícia!", "pt"),
+                ("I need a doctor", "Preciso de um médico", "pt"),
+                ("Where is hospital?", "Onde fica o hospital?", "pt")
+            ],
+            "USA": [
+                ("I need help", "I need help", "en"),
+                ("Call 911", "Call 911", "en"),
+                ("Where is hospital?", "Where is the nearest hospital?", "en")
+            ]
+        }
+        
+        phrases = emergency_phrases.get(country, [])
+        
+        cols = st.columns(2)
+        for i, (english, local, lang) in enumerate(phrases):
+            with cols[i % 2]:
+                if st.button(f"🔊 {english}", key=f"phrase_{i}", use_container_width=True):
+                    audio_file = text_to_speech(local, lang)
+                    if audio_file:
+                        st.audio(audio_file)
+                        st.success(f"**{english}**\n\n*{local}*")
         
         st.markdown("---")
-        
-        # User info
-        user_profile = get_session_value('user_profile')
-        if user_profile:
-            st.markdown(f"**<i class='fas fa-user'></i> {user_profile.get('name', 'User')}**", unsafe_allow_html=True)
-            st.markdown(f"<i class='fas fa-map-marker-alt'></i> {user_profile.get('traveling_to_city', 'Unknown')}, {user_profile.get('traveling_to_country', 'Unknown')}", unsafe_allow_html=True)
-
-
-def show_home_page():
-    """Display home page"""
-    st.markdown("# <i class='fas fa-shield-alt'></i> Welcome to SafeWonder!", unsafe_allow_html=True)
-    
-    user_profile = get_session_value('user_profile')
-    if user_profile:
-        st.markdown(f"### <i class='fas fa-hand-wave'></i> Hello, {user_profile.get('name')}!", unsafe_allow_html=True)
-        st.markdown(f"<i class='fas fa-plane-departure'></i> You're traveling to **{user_profile.get('traveling_to_city')}**, **{user_profile.get('traveling_to_country')}**", unsafe_allow_html=True)
-    
-    st.markdown("---")
-    
-    # Feature cards
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.markdown("""
-        <div class="custom-card">
-            <h3><i class="fas fa-exclamation-triangle"></i> Situation Analyzer</h3>
-            <p>Describe any situation and get instant risk assessment with safety recommendations.</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        st.markdown("""
-        <div class="custom-card">
-            <h3><i class="fas fa-language"></i> Polite Translator</h3>
-            <p>Translate phrases with cultural context and pronunciation guidance.</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col2:
-        st.markdown("""
-        <div class="custom-card">
-            <h3><i class="fas fa-camera"></i> OCR Translator</h3>
-            <p>Photograph signs, menus, or documents for instant translation and scam detection.</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        st.markdown("""
-        <div class="custom-card">
-            <h3><i class="fas fa-ambulance"></i> Emergency</h3>
-            <p>Quick access to emergency contacts, hospitals, and police stations.</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    # Safety tips
-    st.markdown("---")
-    st.markdown("### <i class='fas fa-lightbulb'></i> Quick Safety Tips", unsafe_allow_html=True)
-    
-    country_data = get_session_value('country_data')
-    if country_data and 'culture' in country_data:
-        culture = country_data['culture']
+        st.markdown("### 🎙️ Real-time Voice Translation")
         
         col1, col2 = st.columns(2)
         
         with col1:
-            if 'dos' in culture:
-                st.markdown("**<i class='fas fa-check-circle' style='color: #10B981;'></i> Do's**", unsafe_allow_html=True)
-                for do in culture['dos']:
-                    st.markdown(f"- {do}")
+            st.markdown("#### Speak in English")
+            english_text = st.text_area("Or type your message:", placeholder="I need directions to my hotel")
+            
+            if st.button("🔊 Translate to Local Language"):
+                if english_text:
+                    # Map country to language code
+                    lang_map = {
+                        "India": "hi",
+                        "Thailand": "th",
+                        "Mexico": "es",
+                        "Brazil": "pt",
+                        "USA": "en"
+                    }
+                    
+                    target = lang_map.get(country, "en")
+                    
+                    with st.spinner("Translating..."):
+                        try:
+                            translator = Translator()
+                            translated = translator.translate(english_text, src='en', dest=target)
+                            
+                            st.success(f"**Translation:** {translated.text}")
+                            
+                            audio_file = text_to_speech(translated.text, target)
+                            if audio_file:
+                                st.audio(audio_file)
+                        except Exception as e:
+                            st.error(f"Translation error: {str(e)}")
         
         with col2:
-            if 'donts' in culture:
-                st.markdown("**<i class='fas fa-times-circle' style='color: #EF4444;'></i> Don'ts**", unsafe_allow_html=True)
-                for dont in culture['donts']:
-                    st.markdown(f"- {dont}")
-
-
-def main():
-    """Main application entry point"""
+            st.markdown("#### Local Person Speaks")
+            st.info("🎤 Record audio feature coming soon!\n\nFor now, you can type the local language text below:")
+            
+            local_text = st.text_area("Type local language:", placeholder="स्टेशन कहाँ है?")
+            
+            if st.button("🔊 Translate to English"):
+                if local_text:
+                    lang_map = {
+                        "India": "hi",
+                        "Thailand": "th",
+                        "Mexico": "es",
+                        "Brazil": "pt",
+                        "USA": "en"
+                    }
+                    
+                    source = lang_map.get(country, "en")
+                    
+                    with st.spinner("Translating..."):
+                        try:
+                            translator = Translator()
+                            translated = translator.translate(local_text, src=source, dest='en')
+                            
+                            st.success(f"**Translation:** {translated.text}")
+                            
+                            audio_file = text_to_speech(translated.text, 'en')
+                            if audio_file:
+                                st.audio(audio_file)
+                        except Exception as e:
+                            st.error(f"Translation error: {str(e)}")
     
-    # Page configuration
-    st.set_page_config(
-        page_title="SafeWonder - Travel Safety Assistant",
-        page_icon="🛡️",
-        layout="wide",
-        initial_sidebar_state="expanded"
-    )
-    
-    # Load custom CSS
-    load_custom_css()
-    
-    # Initialize session state
-    initialize_session_state()
-    
-    # Get API key from Streamlit secrets or environment
-    try:
-        api_key = st.secrets.get("GROQ_API_KEY") or os.getenv("GROQ_API_KEY")
-    except:
-        api_key = os.getenv("GROQ_API_KEY")
-    
-    if not api_key:
-        st.error("⚠️ GROQ_API_KEY not found. Please add it to Streamlit secrets or .env file.")
-        st.stop()
-    
-    set_session_value('groq_api_key', api_key)
-    
-    # Load database
-    try:
-        database = load_database()
-        set_session_value('database', database)
-    except Exception as e:
-        st.error(f"❌ Failed to load database: {str(e)}")
-        st.stop()
-    
-    # Check if user has completed onboarding
-    user_profile = get_session_value('user_profile')
-    
-    if not user_profile:
-        # Show onboarding
-        show_onboarding_screen()
-    else:
-        # Show navigation and main app
-        show_navigation()
-        
-        # Route to appropriate page
-        current_page = get_session_value('current_page', 'home')
-        
-        if current_page == 'home':
-            show_home_page()
-        elif current_page == 'analyzer':
-            show_situation_analyzer()
-        elif current_page == 'translator':
-            show_culture_translator()
-        elif current_page == 'ocr':
-            show_ocr_translator()
-        elif current_page == 'settings':
-            show_profile_settings()
-        elif current_page == 'emergency':
-            show_emergency_modal()
-        
-        # Emergency button (floating)
-        st.markdown("""
-        <div class="emergency-button">
-            <a href="?emergency=true" style="text-decoration: none;">
-                <button style="background: #EF4444; color: white; border: none; padding: 16px; border-radius: 50%; font-size: 24px; cursor: pointer; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);">
-                    <i class="fas fa-ambulance"></i>
-                </button>
-            </a>
-        </div>
-        """, unsafe_allow_html=True)
-
+    # Footer
+    st.markdown("---")
+    st.markdown("""
+    <div style='text-align: center; color: #666; padding: 2rem;'>
+        <p><strong>SafeWander</strong> - Built for VisaVerse AI Hackathon</p>
+        <p>Stay safe, travel fearlessly 🌍</p>
+        <p style='font-size: 0.9rem;'>⚠️ This is an AI-powered tool. Always use official emergency services when in danger.</p>
+    </div>
+    """, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
+
