@@ -4,6 +4,7 @@ import os
 from groq import Groq
 from datetime import datetime
 import streamlit.components.v1 as components
+import base64
 
 # Page config
 st.set_page_config(
@@ -13,12 +14,24 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Custom CSS
+# Load logo as base64
+def get_logo_base64():
+    try:
+        if os.path.exists("logo.png"):
+            with open("logo.png", "rb") as f:
+                return base64.b64encode(f.read()).decode()
+    except:
+        pass
+    return None
+
+LOGO_BASE64 = get_logo_base64()
+
+# Custom CSS - Redesigned with Font Awesome, smaller fonts, better UX
 st.markdown("""
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
     
     * { 
         font-family: 'Poppins', sans-serif;
@@ -28,57 +41,165 @@ st.markdown("""
     
     .main { padding: 0 !important; }
     
+    /* Navigation Bar */
+    .navbar {
+        background: white;
+        padding: 0.8rem 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        border-radius: 0 0 15px 15px;
+        margin-bottom: 1rem;
+    }
+    
+    .nav-brand {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+    
+    .nav-logo {
+        height: 40px;
+        width: auto;
+    }
+    
+    .nav-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #667eea;
+    }
+    
+    .nav-home {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 0.6rem 1rem;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+    }
+    
+    .nav-home:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+    
+    /* Hero Section - Smaller */
     .hero-section {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
-        padding: 3rem 2rem;
+        padding: 1.5rem 1.5rem;
         text-align: center;
-        border-radius: 0 0 30px 30px;
-        margin-bottom: 2rem;
-        box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
+        border-radius: 15px;
+        margin: 0 1rem 1.5rem 1rem;
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
+    
+    .hero-logo {
+        height: 50px;
+        margin-bottom: 0.5rem;
     }
     
     .hero-title {
-        font-size: 3rem;
-        font-weight: 800;
-        margin-bottom: 0.5rem;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 0.3rem;
     }
     
     .hero-subtitle {
-        font-size: 1.3rem;
-        opacity: 0.95;
-        font-weight: 300;
+        font-size: 0.95rem;
+        opacity: 0.9;
+        font-weight: 400;
     }
     
+    /* Profile Section */
     .quick-profile {
         background: white;
-        border-radius: 20px;
-        padding: 2rem;
-        box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-        margin: 2rem auto;
-        max-width: 800px;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        margin: 1rem;
+        max-width: 700px;
+        margin-left: auto;
+        margin-right: auto;
     }
     
     .profile-title {
-        font-size: 1.8rem;
+        font-size: 1.3rem;
         font-weight: 700;
         color: #667eea;
-        margin-bottom: 1.5rem;
+        margin-bottom: 1rem;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    
+    /* Feature Cards */
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        margin: 1rem;
+    }
+    
+    .feature-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.2rem;
+        box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+        transition: all 0.2s ease;
+        cursor: pointer;
+        border-left: 4px solid #667eea;
         text-align: center;
     }
     
+    .feature-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.25);
+    }
+    
+    .card-icon {
+        font-size: 1.8rem;
+        color: #667eea;
+        margin-bottom: 0.8rem;
+    }
+    
+    .card-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 0.3rem;
+    }
+    
+    .card-desc {
+        color: #64748b;
+        font-size: 0.8rem;
+        line-height: 1.4;
+    }
+    
+    /* SOS Button */
     .sos-button {
         position: fixed;
-        bottom: 30px;
-        right: 30px;
+        bottom: 20px;
+        right: 20px;
         z-index: 9999;
         animation: pulse 2s infinite;
     }
     
     @keyframes pulse {
         0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-        50% { transform: scale(1.05); box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); }
+        50% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
     }
     
     .sos-btn {
@@ -86,132 +207,90 @@ st.markdown("""
         color: white;
         border: none;
         border-radius: 50%;
-        width: 80px;
-        height: 80px;
-        font-size: 1.5rem;
-        font-weight: 800;
+        width: 65px;
+        height: 65px;
+        font-size: 1.2rem;
+        font-weight: 700;
         cursor: pointer;
-        box-shadow: 0 8px 25px rgba(239, 68, 68, 0.5);
-        transition: all 0.3s;
+        box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5);
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     
     .sos-btn:hover {
         transform: scale(1.1);
-        box-shadow: 0 12px 35px rgba(239, 68, 68, 0.7);
     }
     
-    .dashboard-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 1.5rem;
-        margin: 2rem 0;
-    }
-    
-    .feature-card {
-        background: white;
-        border-radius: 16px;
-        padding: 1.5rem;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        transition: all 0.3s;
-        cursor: pointer;
-        border-left: 5px solid #667eea;
-    }
-    
-    .feature-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-    }
-    
-    .card-icon {
-        font-size: 2.5rem;
-        margin-bottom: 1rem;
-    }
-    
-    .card-title {
-        font-size: 1.3rem;
-        font-weight: 700;
-        color: #1e293b;
-        margin-bottom: 0.5rem;
-    }
-    
-    .card-desc {
-        color: #64748b;
-        font-size: 0.95rem;
-        line-height: 1.6;
-    }
-    
+    /* Map Container */
     .map-container {
         background: white;
-        border-radius: 20px;
-        padding: 1.5rem;
-        box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-        margin: 2rem 0;
+        border-radius: 15px;
+        padding: 1rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        margin: 1rem;
+    }
+    
+    .section-header {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #667eea;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
     }
     
     #map {
-        height: 500px;
-        border-radius: 15px;
-        border: 3px solid #667eea;
+        height: 400px;
+        border-radius: 12px;
+        border: 2px solid #667eea;
     }
     
+    /* Emergency Modal */
     .emergency-modal {
         background: white;
-        border-radius: 20px;
-        padding: 2rem;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-        max-width: 600px;
-        margin: 2rem auto;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        max-width: 500px;
+        margin: 1rem auto;
     }
     
     .emergency-title {
-        font-size: 2rem;
-        font-weight: 800;
+        font-size: 1.4rem;
+        font-weight: 700;
         color: #ef4444;
         text-align: center;
-        margin-bottom: 1.5rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
     }
     
-    .reason-btn {
-        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-        border: 2px solid #ef4444;
-        border-radius: 15px;
-        padding: 1.5rem;
-        margin: 1rem 0;
-        cursor: pointer;
-        transition: all 0.3s;
-        width: 100%;
-        text-align: left;
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #991b1b;
-    }
-    
-    .reason-btn:hover {
-        transform: translateX(10px);
-        background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%);
-    }
-    
+    /* Phrase Cards */
     .phrase-card {
-        background: linear-gradient(135deg, #ddd6fe 0%, #c7d2fe 100%);
-        border-radius: 15px;
-        padding: 1.2rem;
-        margin: 1rem 0;
-        border-left: 5px solid #7c3aed;
+        background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+        border-radius: 12px;
+        padding: 1rem;
+        margin: 0.8rem 0;
+        border-left: 4px solid #7c3aed;
         display: flex;
         justify-content: space-between;
         align-items: center;
     }
     
     .phrase-local {
-        font-size: 1.4rem;
-        font-weight: 800;
+        font-size: 1.1rem;
+        font-weight: 700;
         color: #5b21b6;
     }
     
     .phrase-meaning {
-        font-size: 1rem;
+        font-size: 0.85rem;
         color: #6d28d9;
-        opacity: 0.9;
     }
     
     .phrase-audio {
@@ -219,154 +298,195 @@ st.markdown("""
         color: white;
         border: none;
         border-radius: 50%;
-        width: 50px;
-        height: 50px;
+        width: 40px;
+        height: 40px;
         cursor: pointer;
-        font-size: 1.2rem;
+        font-size: 1rem;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     
+    .phrase-audio:hover {
+        background: #5b21b6;
+        transform: scale(1.1);
+    }
+    
+    .phrase-audio:active {
+        transform: scale(0.95);
+    }
+    
+    /* Scam Checker */
     .scam-checker {
         background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-        border-radius: 20px;
-        padding: 2rem;
-        border-left: 5px solid #f59e0b;
-        margin: 2rem 0;
+        border-radius: 15px;
+        padding: 1.5rem;
+        border-left: 4px solid #f59e0b;
+        margin: 1rem;
     }
     
     .scam-title {
-        font-size: 1.5rem;
-        font-weight: 700;
+        font-size: 1.1rem;
+        font-weight: 600;
         color: #92400e;
-        margin-bottom: 1rem;
+        margin-bottom: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
     }
     
     .price-check {
         background: white;
-        border-radius: 15px;
-        padding: 1.5rem;
+        border-radius: 12px;
+        padding: 1rem;
         margin-top: 1rem;
     }
     
+    /* Alerts */
     .alert-danger {
         background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-        border-left: 5px solid #ef4444;
-        padding: 1.5rem;
-        border-radius: 15px;
+        border-left: 4px solid #ef4444;
+        padding: 1rem;
+        border-radius: 12px;
         color: #991b1b;
-        font-weight: 600;
-        margin: 1rem 0;
+        font-size: 0.9rem;
+        margin: 0.8rem 0;
     }
     
     .alert-success {
         background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-        border-left: 5px solid #10b981;
-        padding: 1.5rem;
-        border-radius: 15px;
+        border-left: 4px solid #10b981;
+        padding: 1rem;
+        border-radius: 12px;
         color: #065f46;
-        font-weight: 600;
-        margin: 1rem 0;
+        font-size: 0.9rem;
+        margin: 0.8rem 0;
     }
     
+    /* Officer Card */
     .officer-card {
         background: white;
-        border-radius: 15px;
-        padding: 1.5rem;
-        margin: 1rem 0;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        border-radius: 12px;
+        padding: 1rem;
+        margin: 0.8rem 0;
+        box-shadow: 0 3px 12px rgba(0,0,0,0.08);
         display: flex;
-        gap: 1.5rem;
+        gap: 1rem;
         align-items: center;
     }
     
     .officer-photo {
-        width: 80px;
-        height: 80px;
+        width: 60px;
+        height: 60px;
         border-radius: 50%;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 2rem;
+        font-size: 1.5rem;
         color: white;
     }
     
-    .officer-info {
-        flex: 1;
-    }
-    
     .officer-name {
-        font-size: 1.3rem;
-        font-weight: 700;
+        font-size: 1rem;
+        font-weight: 600;
         color: #1e293b;
     }
     
     .officer-badge {
         color: #64748b;
-        font-size: 0.9rem;
+        font-size: 0.8rem;
     }
     
     .eta-badge {
         background: #10b981;
         color: white;
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
-        font-weight: 700;
+        padding: 0.4rem 0.8rem;
+        border-radius: 15px;
+        font-weight: 600;
+        font-size: 0.85rem;
     }
     
+    /* Cultural Grid */
     .cultural-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 1rem;
-        margin: 1.5rem 0;
+        margin: 1rem 0;
     }
     
     .culture-card {
         background: white;
-        border-radius: 15px;
-        padding: 1.5rem;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-        border-top: 4px solid #667eea;
+        border-radius: 12px;
+        padding: 1rem;
+        box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+        border-top: 3px solid #667eea;
     }
     
     .culture-icon {
-        font-size: 2rem;
-        margin-bottom: 1rem;
+        font-size: 1.5rem;
+        color: #667eea;
+        margin-bottom: 0.5rem;
     }
     
     .culture-title {
-        font-size: 1.1rem;
-        font-weight: 700;
+        font-size: 0.95rem;
+        font-weight: 600;
         color: #1e293b;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.3rem;
     }
     
     .culture-text {
         color: #64748b;
-        font-size: 0.9rem;
-        line-height: 1.6;
+        font-size: 0.8rem;
+        line-height: 1.5;
     }
     
+    /* Buttons */
     .stButton>button {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         border: none;
-        padding: 0.8rem 2rem;
-        border-radius: 30px;
-        font-weight: 700;
-        font-size: 1rem;
-        transition: all 0.3s;
+        padding: 0.6rem 1.5rem;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
     }
     
     .stButton>button:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
     }
     
+    .stButton>button:active {
+        transform: translateY(0);
+    }
+    
+    /* Hide Streamlit elements */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     .stDeployButton {display: none;}
+    
+    /* Input styling */
+    .stTextInput>div>div>input {
+        border-radius: 10px;
+        border: 2px solid #e2e8f0;
+        font-size: 0.9rem;
+    }
+    
+    .stTextInput>div>div>input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .stSelectbox>div>div {
+        border-radius: 10px;
+    }
 </style>
 """, unsafe_allow_html=True)
+
 
 # Initialize session state
 if 'profile_complete' not in st.session_state:
@@ -377,14 +497,8 @@ if 'sos_active' not in st.session_state:
     st.session_state.sos_active = False
 if 'sos_reason' not in st.session_state:
     st.session_state.sos_reason = None
-if 'show_scam_checker' not in st.session_state:
-    st.session_state.show_scam_checker = False
-if 'show_phrases' not in st.session_state:
-    st.session_state.show_phrases = False
-if 'show_culture' not in st.session_state:
-    st.session_state.show_culture = False
-if 'user_location' not in st.session_state:
-    st.session_state.user_location = None
+if 'active_feature' not in st.session_state:
+    st.session_state.active_feature = None
 
 # Load safety data
 @st.cache_data
@@ -407,6 +521,15 @@ def init_groq():
     except:
         pass
     return None
+
+# Language codes for TTS
+LANGUAGE_CODES = {
+    'India': 'hi-IN',
+    'Thailand': 'th-TH',
+    'Mexico': 'es-MX',
+    'USA': 'en-US',
+    'Brazil': 'pt-BR'
+}
 
 # Destinations
 DESTINATIONS = {
@@ -472,51 +595,51 @@ ESSENTIAL_PHRASES = {
     "Mexico": [
         ("Hola", "Hola", "Hello"),
         ("Gracias", "Gracias", "Thank you"),
-        ("¡Ayuda!", "¡Ayuda!", "Help!"),
-        ("¿Cuánto cuesta?", "¿Cuánto cuesta?", "How much?"),
+        ("Ayuda", "¡Ayuda!", "Help!"),
+        ("Cuanto cuesta", "¿Cuánto cuesta?", "How much?"),
         ("Muy caro", "Muy caro", "Too expensive"),
         ("No quiero", "No quiero", "Don't want"),
-        ("¡Alto!", "¡Alto!", "Stop!"),
+        ("Alto", "¡Alto!", "Stop!"),
         ("Lo siento", "Lo siento", "Sorry"),
-        ("¿Dónde está?", "¿Dónde está?", "Where is?"),
-        ("Policía", "Policía", "Police"),
+        ("Donde esta", "¿Dónde está?", "Where is?"),
+        ("Policia", "Policía", "Police"),
         ("Hospital", "Hospital", "Hospital"),
         ("No entiendo", "No entiendo", "Don't understand"),
         ("Agua", "Agua", "Water"),
         ("Tengo hambre", "Tengo hambre", "I'm hungry"),
-        ("Baño", "Baño", "Bathroom")
+        ("Bano", "Baño", "Bathroom")
     ],
     "USA": [
         ("Hello", "Hello", "Greeting"),
         ("Thank you", "Thank you", "Thanks"),
-        ("Help!", "Help!", "Emergency"),
-        ("How much?", "How much?", "Price"),
+        ("Help", "Help!", "Emergency"),
+        ("How much", "How much?", "Price"),
         ("Too expensive", "Too expensive", "Costly"),
         ("No thanks", "No thanks", "Decline"),
         ("Stop", "Stop", "Halt"),
         ("Excuse me", "Excuse me", "Attention"),
-        ("Where is?", "Where is?", "Location"),
+        ("Where is", "Where is?", "Location"),
         ("Call police", "Call police", "Emergency"),
         ("Hospital", "Hospital", "Medical"),
-        ("I don't understand", "I don't understand", "Confusion"),
+        ("I dont understand", "I don't understand", "Confusion"),
         ("Water", "Water", "Drink"),
         ("Restroom", "Restroom", "Bathroom"),
         ("Emergency", "Emergency", "Urgent help")
     ],
     "Brazil": [
-        ("Olá", "Olá", "Hello"),
-        ("Obrigado/a", "Obrigado/a", "Thank you"),
-        ("Socorro!", "Socorro!", "Help!"),
-        ("Quanto custa?", "Quanto custa?", "How much?"),
+        ("Ola", "Olá", "Hello"),
+        ("Obrigado", "Obrigado/a", "Thank you"),
+        ("Socorro", "Socorro!", "Help!"),
+        ("Quanto custa", "Quanto custa?", "How much?"),
         ("Muito caro", "Muito caro", "Too expensive"),
-        ("Não quero", "Não quero", "Don't want"),
-        ("Pare!", "Pare!", "Stop!"),
+        ("Nao quero", "Não quero", "Don't want"),
+        ("Pare", "Pare!", "Stop!"),
         ("Desculpe", "Desculpe", "Sorry"),
-        ("Onde fica?", "Onde fica?", "Where is?"),
-        ("Polícia", "Polícia", "Police"),
+        ("Onde fica", "Onde fica?", "Where is?"),
+        ("Policia", "Polícia", "Police"),
         ("Hospital", "Hospital", "Hospital"),
-        ("Não entendo", "Não entendo", "Don't understand"),
-        ("Água", "Água", "Water"),
+        ("Nao entendo", "Não entendo", "Don't understand"),
+        ("Agua", "Água", "Water"),
         ("Estou com fome", "Estou com fome", "I'm hungry"),
         ("Banheiro", "Banheiro", "Bathroom")
     ]
@@ -546,33 +669,67 @@ MOCK_OFFICERS = [
     {"name": "Officer Vikram Rao", "badge": "DL-5673", "eta": "6 mins", "gender": "Male"}
 ]
 
+
+# Navigation Bar Component
+def show_navbar():
+    logo_html = ""
+    if LOGO_BASE64:
+        logo_html = f'<img src="data:image/png;base64,{LOGO_BASE64}" class="nav-logo" alt="SafeWander">'
+    else:
+        logo_html = '<i class="fa-solid fa-shield-halved" style="font-size:1.8rem;color:#667eea;"></i>'
+    
+    st.markdown(f'''
+    <div class="navbar">
+        <div class="nav-brand">
+            {logo_html}
+            <span class="nav-title">SafeWander</span>
+        </div>
+    </div>
+    ''', unsafe_allow_html=True)
+
+# Home button function
+def go_home():
+    st.session_state.active_feature = None
+    st.session_state.sos_active = False
+    st.session_state.sos_reason = None
+
 # Quick Profile Form
 def show_quick_profile():
-    st.markdown('<div class="hero-section">', unsafe_allow_html=True)
-    st.markdown('<div class="hero-title">🛡️ SafeWander</div>', unsafe_allow_html=True)
-    st.markdown('<div class="hero-subtitle">Your AI-Powered Travel Safety Guardian</div>', unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
+    # Hero with logo
+    logo_html = ""
+    if LOGO_BASE64:
+        logo_html = f'<img src="data:image/png;base64,{LOGO_BASE64}" class="hero-logo" alt="SafeWander">'
+    else:
+        logo_html = '<i class="fa-solid fa-shield-halved" style="font-size:2.5rem;margin-bottom:0.5rem;"></i>'
+    
+    st.markdown(f'''
+    <div class="hero-section">
+        {logo_html}
+        <div class="hero-title">SafeWander</div>
+        <div class="hero-subtitle">Your AI-Powered Travel Safety Guardian</div>
+    </div>
+    ''', unsafe_allow_html=True)
     
     st.markdown('<div class="quick-profile">', unsafe_allow_html=True)
-    st.markdown('<div class="profile-title">Quick Profile Setup ⚡</div>', unsafe_allow_html=True)
+    st.markdown('<div class="profile-title"><i class="fa-solid fa-bolt"></i> Quick Profile Setup</div>', unsafe_allow_html=True)
     
     col1, col2 = st.columns(2)
     
     with col1:
-        name = st.text_input("👤 Your Name", placeholder="e.g., Sarah")
-        gender = st.selectbox("⚧ Gender", ["Female", "Male", "Non-binary", "Prefer not to say"])
-        age = st.selectbox("📅 Age Range", ["18-25", "26-35", "36-50", "50+"])
+        name = st.text_input("Your Name", placeholder="e.g., Sarah", label_visibility="visible")
+        gender = st.selectbox("Gender", ["Female", "Male", "Non-binary", "Prefer not to say"])
+        age = st.selectbox("Age Range", ["18-25", "26-35", "36-50", "50+"])
     
     with col2:
-        destination_country = st.selectbox("🌍 Destination Country", list(DESTINATIONS.keys()))
-        destination_city = st.selectbox("🏙️ City", DESTINATIONS[destination_country]["cities"])
-        interest = st.selectbox("✨ Primary Interest", 
-            ["🏖️ Beach & Relaxation", "🏛️ Culture & History", "🍜 Food & Cuisine", 
-             "🎉 Nightlife", "💼 Business", "🧘 Wellness", "🏔️ Adventure"])
+        destination_country = st.selectbox("Destination Country", list(DESTINATIONS.keys()))
+        destination_city = st.selectbox("City", DESTINATIONS[destination_country]["cities"])
+        interest = st.selectbox("Primary Interest", 
+            ["Beach & Relaxation", "Culture & History", "Food & Cuisine", 
+             "Nightlife", "Business", "Wellness", "Adventure"])
     
     st.markdown('</div>', unsafe_allow_html=True)
     
-    if st.button("🚀 Start My Safe Journey", use_container_width=True):
+    if st.button("Start My Safe Journey", use_container_width=True):
         if name and destination_country and destination_city:
             st.session_state.profile = {
                 "name": name,
@@ -580,7 +737,7 @@ def show_quick_profile():
                 "age_range": age,
                 "destination_country": destination_country,
                 "destination_city": destination_city,
-                "interest": interest.split()[0]
+                "interest": interest
             }
             st.session_state.profile_complete = True
             st.rerun()
@@ -593,10 +750,7 @@ def show_live_map():
     city = profile.get('destination_city', 'Delhi')
     country = profile.get('destination_country', 'India')
     
-    # Get city coordinates
     coords = DESTINATIONS.get(country, {}).get("coords", {}).get(city, [28.6139, 77.2090])
-    
-    # Get police stations
     police = POLICE_STATIONS.get(city, [])
     
     map_html = f"""
@@ -604,10 +758,11 @@ def show_live_map():
     <html>
     <head>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css"/>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
         <style>
-            body {{ margin: 0; padding: 0; }}
-            #map {{ width: 100%; height: 500px; }}
+            body {{ margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }}
+            #map {{ width: 100%; height: 400px; border-radius: 12px; }}
             .location-btn {{
                 position: absolute;
                 top: 10px;
@@ -615,88 +770,64 @@ def show_live_map():
                 z-index: 1000;
                 background: white;
                 border: 2px solid #667eea;
-                border-radius: 10px;
-                padding: 10px 15px;
+                border-radius: 8px;
+                padding: 8px 12px;
                 cursor: pointer;
-                font-weight: 700;
+                font-weight: 600;
                 color: #667eea;
+                font-size: 0.85rem;
+                display: flex;
+                align-items: center;
+                gap: 5px;
             }}
+            .location-btn:hover {{ background: #667eea; color: white; }}
         </style>
     </head>
     <body>
-        <button class="location-btn" onclick="getLocation()">📍 Get My Location</button>
+        <button class="location-btn" onclick="getLocation()"><i class="fa-solid fa-location-crosshairs"></i> My Location</button>
         <div id="map"></div>
         <script>
             var map = L.map('map').setView([{coords[0]}, {coords[1]}], 13);
             
             L.tileLayer('https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png', {{
-                attribution: '© OpenStreetMap contributors',
+                attribution: '© OpenStreetMap',
                 maxZoom: 19
             }}).addTo(map);
             
-            // City center
             L.marker([{coords[0]}, {coords[1]}]).addTo(map)
-                .bindPopup('<b>{city}, {country}</b><br>Your destination city')
-                .openPopup();
+                .bindPopup('<b>{city}, {country}</b><br>Your destination').openPopup();
             
-            // Police stations
             var policeIcon = L.icon({{
                 iconUrl: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjMzY0OGY4Ij48cGF0aCBkPSJNMTIgMkM4LjEzIDIgNSA1LjEzIDUgOWMwIDUuMjUgNyAxMyA3IDEzczctNy43NSA3LTEzYzAtMy44Ny0zLjEzLTctNy03em0wIDkuNWMtMS4zOCAwLTIuNS0xLjEyLTIuNS0yLjVzMS4xMi0yLjUgMi41LTIuNSAyLjUgMS4xMiAyLjUgMi41LTEuMTIgMi41LTIuNSAyLjV6Ii8+PC9zdmc+',
-                iconSize: [35, 35],
-                iconAnchor: [17, 35],
-                popupAnchor: [0, -35]
+                iconSize: [30, 30], iconAnchor: [15, 30], popupAnchor: [0, -30]
             }});
             
-            {chr(10).join([f"L.marker([{p['lat']}, {p['lng']}], {{icon: policeIcon}}).addTo(map).bindPopup('<b>{p['name']}</b><br>Distance: {p['distance']}');" for p in police])}
+            {chr(10).join([f"L.marker([{p['lat']}, {p['lng']}], {{icon: policeIcon}}).addTo(map).bindPopup('<b>{p['name']}</b><br>{p['distance']}');" for p in police])}
             
-            // Safe zones (green circles)
             L.circle([{coords[0] + 0.01}, {coords[1] + 0.01}], {{
-                color: '#10b981',
-                fillColor: '#10b981',
-                fillOpacity: 0.2,
-                radius: 500
-            }}).addTo(map).bindPopup('<b>Safe Zone</b><br>Tourist area - well lit');
+                color: '#10b981', fillColor: '#10b981', fillOpacity: 0.2, radius: 500
+            }}).addTo(map).bindPopup('<b>Safe Zone</b><br>Tourist area');
             
-            // User location
             var userMarker = null;
-            
             function getLocation() {{
                 if (navigator.geolocation) {{
-                    navigator.geolocation.getCurrentPosition(showPosition, showError);
-                }} else {{
-                    alert("Geolocation not supported by browser");
-                }}
-            }}
-            
-            function showPosition(position) {{
-                var lat = position.coords.latitude;
-                var lng = position.coords.longitude;
-                
-                if (userMarker) {{
-                    map.removeLayer(userMarker);
-                }}
-                
-                var redIcon = L.icon({{
-                    iconUrl: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjZWY0NDQ0Ij48cGF0aCBkPSJNMTIgMkM4LjEzIDIgNSA1LjEzIDUgOWMwIDUuMjUgNyAxMyA3IDEzczctNy43NSA3LTEzYzAtMy44Ny0zLjEzLTctNy03em0wIDkuNWMtMS4zOCAwLTIuNS0xLjEyLTIuNS0yLjVzMS4xMi0yLjUgMi41LTIuNSAyLjUgMS4xMiAyLjUgMi41LTEuMTIgMi41LTIuNSAyLjV6Ii8+PC9zdmc+',
-                    iconSize: [40, 40],
-                    iconAnchor: [20, 40]
-                }});
-                
-                userMarker = L.marker([lat, lng], {{icon: redIcon}}).addTo(map)
-                    .bindPopup('<b>You are here!</b>').openPopup();
-                
-                map.setView([lat, lng], 15);
-            }}
-            
-            function showError(error) {{
-                alert("Location error: " + error.message);
+                    navigator.geolocation.getCurrentPosition(function(pos) {{
+                        if (userMarker) map.removeLayer(userMarker);
+                        var redIcon = L.icon({{
+                            iconUrl: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjZWY0NDQ0Ij48cGF0aCBkPSJNMTIgMkM4LjEzIDIgNSA1LjEzIDUgOWMwIDUuMjUgNyAxMyA3IDEzczctNy43NSA3LTEzYzAtMy44Ny0zLjEzLTctNy03em0wIDkuNWMtMS4zOCAwLTIuNS0xLjEyLTIuNS0yLjVzMS4xMi0yLjUgMi41LTIuNSAyLjUgMS4xMiAyLjUgMi41LTEuMTIgMi41LTIuNSAyLjV6Ii8+PC9zdmc+',
+                            iconSize: [35, 35], iconAnchor: [17, 35]
+                        }});
+                        userMarker = L.marker([pos.coords.latitude, pos.coords.longitude], {{icon: redIcon}}).addTo(map).bindPopup('<b>You are here!</b>').openPopup();
+                        map.setView([pos.coords.latitude, pos.coords.longitude], 15);
+                    }}, function(err) {{ alert("Location error: " + err.message); }});
+                }} else {{ alert("Geolocation not supported"); }}
             }}
         </script>
     </body>
     </html>
     """
-    
-    components.html(map_html, height=520)
+    components.html(map_html, height=420)
+
 
 # SOS Emergency Handler
 def show_sos_modal():
@@ -705,162 +836,131 @@ def show_sos_modal():
     
     if not st.session_state.sos_reason:
         st.markdown('<div class="emergency-modal">', unsafe_allow_html=True)
-        st.markdown('<div class="emergency-title">🚨 SOS ACTIVATED</div>', unsafe_allow_html=True)
-        st.markdown('<p style="text-align:center;color:#64748b;font-size:1.1rem;">Why do you need help? (Select one)</p>', unsafe_allow_html=True)
+        st.markdown('<div class="emergency-title"><i class="fa-solid fa-triangle-exclamation"></i> SOS ACTIVATED</div>', unsafe_allow_html=True)
+        st.markdown('<p style="text-align:center;color:#64748b;font-size:0.9rem;">Why do you need help?</p>', unsafe_allow_html=True)
         
         reasons = [
-            ("🚶 Someone is following/stalking me", "stalking"),
-            ("💰 Someone stole my belongings", "theft"),
-            ("😰 I don't feel safe here", "unsafe"),
-            ("🆘 URGENT - I need immediate help!", "urgent")
+            ("Someone is following me", "stalking", "fa-person-walking"),
+            ("Someone stole my belongings", "theft", "fa-sack-xmark"),
+            ("I don't feel safe here", "unsafe", "fa-face-frown"),
+            ("URGENT - Need immediate help!", "urgent", "fa-bolt")
         ]
         
-        for label, reason in reasons:
-            if st.button(label, key=reason, use_container_width=True):
+        for label, reason, icon in reasons:
+            if st.button(f"{label}", key=reason, use_container_width=True):
                 st.session_state.sos_reason = reason
                 st.rerun()
         
-        if st.button("❌ Cancel SOS", use_container_width=True):
+        if st.button("Cancel SOS", use_container_width=True):
             st.session_state.sos_active = False
             st.rerun()
         
         st.markdown('</div>', unsafe_allow_html=True)
     
     else:
-        # Show officer dispatch
         st.markdown('<div class="emergency-modal">', unsafe_allow_html=True)
-        st.markdown('<div class="emergency-title">✅ HELP IS ON THE WAY!</div>', unsafe_allow_html=True)
+        st.markdown('<div class="emergency-title" style="color:#10b981;"><i class="fa-solid fa-check-circle"></i> HELP IS ON THE WAY!</div>', unsafe_allow_html=True)
         
-        # Get appropriate officer
         gender = profile.get('gender', 'Male')
         country = profile.get('destination_country', 'India')
         
         if gender == 'Female' and country == 'India':
             officer = [o for o in MOCK_OFFICERS if o['gender'] == 'Female'][0]
-            st.markdown('<div class="alert-success">🚺 Female officer dispatched as per your request</div>', unsafe_allow_html=True)
+            st.markdown('<div class="alert-success"><i class="fa-solid fa-venus"></i> Female officer dispatched as per your request</div>', unsafe_allow_html=True)
         else:
             officer = MOCK_OFFICERS[1]
         
-        # Officer card
         st.markdown(f'''
         <div class="officer-card">
-            <div class="officer-photo">👮‍♀️</div>
-            <div class="officer-info">
+            <div class="officer-photo"><i class="fa-solid fa-user-shield"></i></div>
+            <div style="flex:1;">
                 <div class="officer-name">{officer['name']}</div>
                 <div class="officer-badge">Badge: {officer['badge']}</div>
-                <div style="margin-top:0.5rem;color:#64748b;">
-                    📍 Current location tracked<br/>
-                    🚔 Nearest police station: 1.2 km
+                <div style="margin-top:0.3rem;color:#64748b;font-size:0.8rem;">
+                    <i class="fa-solid fa-location-dot"></i> Location tracked | 
+                    <i class="fa-solid fa-building-shield"></i> Nearest station: 1.2 km
                 </div>
             </div>
             <div class="eta-badge">ETA: {officer['eta']}</div>
         </div>
         ''', unsafe_allow_html=True)
         
-        # Safety instructions
         st.markdown('<div class="alert-danger">', unsafe_allow_html=True)
-        st.markdown('<strong>⚠️ WHILE YOU WAIT:</strong>', unsafe_allow_html=True)
+        st.markdown('<strong><i class="fa-solid fa-exclamation-triangle"></i> WHILE YOU WAIT:</strong>', unsafe_allow_html=True)
         
-        if st.session_state.sos_reason == "stalking":
-            st.markdown("""
-            1. Move to a crowded public place (mall, restaurant, shop)
-            2. DO NOT go to isolated areas
-            3. Make eye contact with security/staff
-            4. Stay on well-lit main roads
-            """)
-        elif st.session_state.sos_reason == "theft":
-            st.markdown("""
-            1. Do NOT chase the thief
-            2. Note the direction they fled
-            3. Memorize clothing/appearance
-            4. Stay in public area until officer arrives
-            """)
-        elif st.session_state.sos_reason == "unsafe":
-            st.markdown("""
-            1. Go to nearest public place immediately
-            2. Enter a shop/restaurant if needed
-            3. Ask staff to stay until police arrive
-            4. Share your live location with a friend
-            """)
-        else:
-            st.markdown("""
-            1. Stay calm and in a safe location
-            2. If in danger, call emergency: """ + data.get("emergency_numbers", {}).get(country, {}).get("police", "100") + """
-            3. Describe your surroundings to the officer
-            4. Do NOT put yourself in more danger
-            """)
+        instructions = {
+            "stalking": "1. Move to a crowded public place\n2. DO NOT go to isolated areas\n3. Make eye contact with security\n4. Stay on well-lit roads",
+            "theft": "1. Do NOT chase the thief\n2. Note the direction they fled\n3. Memorize their appearance\n4. Stay in public area",
+            "unsafe": "1. Go to nearest public place\n2. Enter a shop/restaurant\n3. Ask staff to stay with you\n4. Share live location with friend",
+            "urgent": f"1. Stay calm and safe\n2. Call emergency: {data.get('emergency_numbers', {}).get(country, {}).get('police', '100')}\n3. Describe your surroundings\n4. Do NOT put yourself in danger"
+        }
+        st.markdown(instructions.get(st.session_state.sos_reason, "Stay calm and wait for help."))
         st.markdown('</div>', unsafe_allow_html=True)
         
-        # Emergency numbers
         emergency = data.get("emergency_numbers", {}).get(country, {})
         if emergency:
-            st.markdown('<p style="font-weight:700;margin-top:1.5rem;">📞 Emergency Numbers:</p>', unsafe_allow_html=True)
+            st.markdown('<p style="font-weight:600;margin-top:1rem;font-size:0.9rem;"><i class="fa-solid fa-phone"></i> Emergency Numbers:</p>', unsafe_allow_html=True)
             cols = st.columns(len(emergency))
             for i, (service, number) in enumerate(emergency.items()):
                 with cols[i]:
-                    st.markdown(f'<div style="text-align:center;padding:1rem;background:#fee2e2;border-radius:10px;"><strong>{service.title()}</strong><br/><span style="font-size:1.3rem;color:#ef4444;">{number}</span></div>', unsafe_allow_html=True)
+                    st.markdown(f'<div style="text-align:center;padding:0.8rem;background:#fee2e2;border-radius:8px;"><strong style="font-size:0.8rem;">{service.title()}</strong><br/><span style="font-size:1.1rem;color:#ef4444;font-weight:700;">{number}</span></div>', unsafe_allow_html=True)
         
-        if st.button("✅ I'm Safe Now - Cancel SOS", use_container_width=True):
+        if st.button("I'm Safe Now - Cancel SOS", use_container_width=True):
             st.session_state.sos_active = False
             st.session_state.sos_reason = None
             st.rerun()
         
         st.markdown('</div>', unsafe_allow_html=True)
 
-# Scam Price Checker
+# Scam Price Checker - FIXED
 def show_scam_checker():
     data = load_safety_data()
     profile = st.session_state.profile
     country = profile.get('destination_country', 'India')
     city = profile.get('destination_city', 'Delhi')
     
-    st.markdown('<div class="scam-checker">', unsafe_allow_html=True)
-    st.markdown('<div class="scam-title">💰 Real-Time Scam Price Checker</div>', unsafe_allow_html=True)
+    # Initialize relevant BEFORE any conditional checks - FIX FOR UnboundLocalError
+    scams = data.get("transport_scams", [])
+    relevant = [s for s in scams if s.get("country") == country]
     
-    st.markdown(f'<p style="color:#92400e;">Currently in: <strong>{city}, {country}</strong></p>', unsafe_allow_html=True)
+    st.markdown('<div class="scam-checker">', unsafe_allow_html=True)
+    st.markdown('<div class="scam-title"><i class="fa-solid fa-magnifying-glass-dollar"></i> Real-Time Scam Price Checker</div>', unsafe_allow_html=True)
+    st.markdown(f'<p style="color:#92400e;font-size:0.85rem;">Currently in: <strong>{city}, {country}</strong></p>', unsafe_allow_html=True)
     
     query = st.text_input("What are they charging you?", 
-        placeholder=f"e.g., Auto driver wants ₹500 from airport to hotel")
+        placeholder=f"e.g., Auto driver wants ₹500 from airport to hotel",
+        label_visibility="collapsed")
     
     if query:
-        # Parse and check against data
-        scams = data.get("transport_scams", [])
-        relevant = [s for s in scams if s.get("country") == country]
-        
         if "500" in query or "₹500" in query:
             st.markdown('<div class="price-check">', unsafe_allow_html=True)
-            st.markdown('<div class="alert-danger">', unsafe_allow_html=True)
-            st.markdown('''
-            <h3 style="color:#991b1b;">🚨 SCAM ALERT!</h3>
-            <p><strong>They're charging:</strong> ₹500</p>
-            <p><strong>Normal rate:</strong> ₹150-200</p>
-            <p><strong>You're being overcharged by:</strong> 250%!</p>
-            ''', unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)
+            st.markdown('''<div class="alert-danger">
+            <h4 style="color:#991b1b;margin:0 0 0.5rem 0;font-size:1rem;"><i class="fa-solid fa-circle-exclamation"></i> SCAM ALERT!</h4>
+            <p style="margin:0.3rem 0;font-size:0.85rem;"><strong>They're charging:</strong> ₹500</p>
+            <p style="margin:0.3rem 0;font-size:0.85rem;"><strong>Normal rate:</strong> ₹150-200</p>
+            <p style="margin:0.3rem 0;font-size:0.85rem;"><strong>Overcharge:</strong> 250%!</p>
+            </div>''', unsafe_allow_html=True)
             
-            st.markdown('''
-            <p style="margin-top:1rem;"><strong>✅ What to do:</strong></p>
-            <ul>
+            st.markdown('''<p style="margin-top:0.8rem;font-size:0.85rem;"><strong><i class="fa-solid fa-check"></i> What to do:</strong></p>
+            <ul style="font-size:0.8rem;color:#64748b;margin:0.5rem 0;">
                 <li>Show this screen to the driver</li>
                 <li>Refuse and book Uber/Ola instead</li>
                 <li>Insist on meter usage</li>
-                <li>Report to tourist helpline if pressured</li>
-            </ul>
-            ''', unsafe_allow_html=True)
+            </ul>''', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
         else:
             st.markdown('<div class="price-check">', unsafe_allow_html=True)
-            st.markdown('<p style="color:#64748b;">Enter the amount to check if it\'s a fair price...</p>', unsafe_allow_html=True)
+            st.markdown('<p style="color:#64748b;font-size:0.85rem;">Enter the amount to check if it\'s a fair price...</p>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
     
-    # Common scams for this location
+    # Show common scams - now relevant is always defined
     if relevant:
-        st.markdown('<p style="font-weight:700;margin-top:1.5rem;">⚠️ Common Scams in ' + city + ':</p>', unsafe_allow_html=True)
+        st.markdown(f'<p style="font-weight:600;margin-top:1rem;font-size:0.9rem;"><i class="fa-solid fa-triangle-exclamation"></i> Common Scams in {city}:</p>', unsafe_allow_html=True)
         for scam in relevant[:3]:
             st.markdown(f'''
-            <div style="background:white;padding:1rem;border-radius:10px;margin:0.5rem 0;">
+            <div style="background:white;padding:0.8rem;border-radius:8px;margin:0.5rem 0;font-size:0.85rem;">
                 <strong>{scam.get("scam_type", "Scam")}</strong><br/>
-                <small style="color:#64748b;">{scam.get("description", "")}</small><br/>
+                <small style="color:#64748b;">{scam.get("description", "")[:80]}...</small><br/>
                 <span style="color:#10b981;">Normal: {scam.get("normal_rate", "N/A")}</span> | 
                 <span style="color:#ef4444;">Scam: {scam.get("scam_rate", "N/A")}</span>
             </div>
@@ -868,36 +968,75 @@ def show_scam_checker():
     
     st.markdown('</div>', unsafe_allow_html=True)
 
-# Essential Phrases
+
+# Essential Phrases with WORKING Text-to-Speech
 def show_phrases():
     profile = st.session_state.profile
     country = profile.get('destination_country', 'India')
     phrases = ESSENTIAL_PHRASES.get(country, [])
+    lang_code = LANGUAGE_CODES.get(country, 'en-US')
     
-    st.markdown(f'<h2 style="color:#667eea;margin:2rem 0 1rem 0;">💬 15 Essential Phrases for {country}</h2>', unsafe_allow_html=True)
-    st.markdown('<p style="color:#64748b;margin-bottom:2rem;">Click 🔊 to hear pronunciation (text-to-speech)</p>', unsafe_allow_html=True)
+    st.markdown(f'<div class="section-header"><i class="fa-solid fa-language"></i> 15 Essential Phrases for {country}</div>', unsafe_allow_html=True)
+    st.markdown('<p style="color:#64748b;font-size:0.8rem;margin-bottom:1rem;">Click the speaker button to hear pronunciation</p>', unsafe_allow_html=True)
     
-    for local, script, meaning in phrases:
+    # Create phrase cards with unique IDs for TTS
+    for idx, (local, script, meaning) in enumerate(phrases):
         st.markdown(f'''
         <div class="phrase-card">
             <div>
                 <div class="phrase-local">{local}</div>
                 <div class="phrase-meaning">{script} = {meaning}</div>
             </div>
-            <button class="phrase-audio" onclick="speak('{local}')">🔊</button>
+            <button class="phrase-audio" onclick="speakPhrase('{local}', '{lang_code}', this)" title="Click to hear pronunciation">
+                <i class="fa-solid fa-volume-high"></i>
+            </button>
         </div>
         ''', unsafe_allow_html=True)
     
-    # Add TTS
-    components.html("""
+    # Working TTS JavaScript with proper error handling
+    components.html(f"""
     <script>
-    function speak(text) {
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'hi-IN';
-        utterance.rate = 0.8;
-        window.speechSynthesis.speak(utterance);
-    }
+    function speakPhrase(text, langCode, button) {{
+        if ('speechSynthesis' in window) {{
+            // Cancel any ongoing speech
+            window.speechSynthesis.cancel();
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = langCode;
+            utterance.rate = 0.8;
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
+            
+            // Visual feedback - change button color
+            button.style.backgroundColor = '#5b21b6';
+            button.innerHTML = '<i class="fa-solid fa-volume-high" style="animation: pulse 0.5s infinite;"></i>';
+            
+            utterance.onend = function() {{
+                button.style.backgroundColor = '#7c3aed';
+                button.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
+            }};
+            
+            utterance.onerror = function(event) {{
+                button.style.backgroundColor = '#7c3aed';
+                button.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
+                console.error('Speech error:', event.error);
+            }};
+            
+            // Small delay to ensure speech synthesis is ready
+            setTimeout(function() {{
+                window.speechSynthesis.speak(utterance);
+            }}, 100);
+        }} else {{
+            alert('Text-to-speech is not supported in your browser. Please try Chrome or Edge.');
+        }}
+    }}
     </script>
+    <style>
+    @keyframes pulse {{
+        0%, 100% {{ opacity: 1; }}
+        50% {{ opacity: 0.5; }}
+    }}
+    </style>
     """, height=0)
 
 # Cultural Guide
@@ -908,50 +1047,51 @@ def show_cultural_guide():
     
     cultural = next((c for c in data.get("cultural_guidelines", []) if c.get("country") == country), {})
     
-    st.markdown(f'<h2 style="color:#667eea;margin:2rem 0 1rem 0;">🌍 Cultural Respect Guide: {country}</h2>', unsafe_allow_html=True)
+    st.markdown(f'<div class="section-header"><i class="fa-solid fa-earth-americas"></i> Cultural Respect Guide: {country}</div>', unsafe_allow_html=True)
     
     st.markdown('<div class="cultural-grid">', unsafe_allow_html=True)
     
-    # Dress code
-    st.markdown(f'''
-    <div class="culture-card">
-        <div class="culture-icon">👕</div>
-        <div class="culture-title">Dress Code</div>
-        <div class="culture-text">{cultural.get("dress", "Dress modestly in religious places")}</div>
-    </div>
-    ''', unsafe_allow_html=True)
+    col1, col2, col3 = st.columns(3)
     
-    # Gestures
-    st.markdown(f'''
-    <div class="culture-card">
-        <div class="culture-icon">🤝</div>
-        <div class="culture-title">Gestures & Greetings</div>
-        <div class="culture-text">{cultural.get("gestures", "Be respectful with gestures")}</div>
-    </div>
-    ''', unsafe_allow_html=True)
+    with col1:
+        st.markdown(f'''
+        <div class="culture-card">
+            <div class="culture-icon"><i class="fa-solid fa-shirt"></i></div>
+            <div class="culture-title">Dress Code</div>
+            <div class="culture-text">{cultural.get("dress", "Dress modestly in religious places")}</div>
+        </div>
+        ''', unsafe_allow_html=True)
     
-    # Etiquette
-    st.markdown(f'''
-    <div class="culture-card">
-        <div class="culture-icon">🙏</div>
-        <div class="culture-title">Local Etiquette</div>
-        <div class="culture-text">{cultural.get("etiquette", "Follow local customs")}</div>
-    </div>
-    ''', unsafe_allow_html=True)
+    with col2:
+        st.markdown(f'''
+        <div class="culture-card">
+            <div class="culture-icon"><i class="fa-solid fa-handshake"></i></div>
+            <div class="culture-title">Gestures</div>
+            <div class="culture-text">{cultural.get("gestures", "Be respectful with gestures")}</div>
+        </div>
+        ''', unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(f'''
+        <div class="culture-card">
+            <div class="culture-icon"><i class="fa-solid fa-hands-praying"></i></div>
+            <div class="culture-title">Etiquette</div>
+            <div class="culture-text">{cultural.get("etiquette", "Follow local customs")}</div>
+        </div>
+        ''', unsafe_allow_html=True)
     
     st.markdown('</div>', unsafe_allow_html=True)
     
-    # Do's and Don'ts
     col1, col2 = st.columns(2)
     
     with col1:
         st.markdown('''
-        <div style="background:linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);padding:1.5rem;border-radius:15px;border-left:5px solid #10b981;">
-            <h3 style="color:#065f46;">✅ DO's</h3>
-            <ul style="color:#047857;line-height:2;">
+        <div style="background:linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);padding:1rem;border-radius:12px;border-left:4px solid #10b981;">
+            <h4 style="color:#065f46;font-size:0.95rem;margin:0 0 0.5rem 0;"><i class="fa-solid fa-check"></i> DO's</h4>
+            <ul style="color:#047857;font-size:0.8rem;line-height:1.8;margin:0;padding-left:1.2rem;">
                 <li>Remove shoes at temples/homes</li>
-                <li>Use right hand for giving/receiving</li>
-                <li>Ask before photographing people</li>
+                <li>Use right hand for giving</li>
+                <li>Ask before photographing</li>
                 <li>Respect religious customs</li>
             </ul>
         </div>
@@ -959,36 +1099,31 @@ def show_cultural_guide():
     
     with col2:
         st.markdown('''
-        <div style="background:linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);padding:1.5rem;border-radius:15px;border-left:5px solid #ef4444;">
-            <h3 style="color:#991b1b;">❌ DON'Ts</h3>
-            <ul style="color:#991b1b;line-height:2;">
-                <li>Don't point feet at people/deities</li>
-                <li>Don't touch heads (considered sacred)</li>
-                <li>Don't wear shoes in religious places</li>
+        <div style="background:linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);padding:1rem;border-radius:12px;border-left:4px solid #ef4444;">
+            <h4 style="color:#991b1b;font-size:0.95rem;margin:0 0 0.5rem 0;"><i class="fa-solid fa-xmark"></i> DON'Ts</h4>
+            <ul style="color:#991b1b;font-size:0.8rem;line-height:1.8;margin:0;padding-left:1.2rem;">
+                <li>Don't point feet at people</li>
+                <li>Don't touch heads</li>
+                <li>Don't wear shoes in temples</li>
                 <li>Don't show excessive PDA</li>
             </ul>
         </div>
         ''', unsafe_allow_html=True)
+
 
 # Main Dashboard
 def show_dashboard():
     profile = st.session_state.profile
     data = load_safety_data()
     
-    # Welcome banner
-    st.markdown(f'''
-    <div class="hero-section">
-        <div class="hero-title">Welcome, {profile.get("name")}! 👋</div>
-        <div class="hero-subtitle">
-            You're exploring {profile.get("interest", "traveling")} in {profile.get("destination_city")}, {profile.get("destination_country")}
-        </div>
-    </div>
-    ''', unsafe_allow_html=True)
+    # Navigation bar with home button
+    show_navbar()
     
-    # SOS Button (always visible)
-    if not st.session_state.sos_active:
-        if st.button("🚨 SOS", key="sos_main", help="Emergency Help"):
-            st.session_state.sos_active = True
+    # Home button in sidebar area
+    col1, col2, col3 = st.columns([1, 6, 1])
+    with col3:
+        if st.button("🏠", key="home_btn", help="Go to Home"):
+            go_home()
             st.rerun()
     
     # Show SOS modal if active
@@ -996,74 +1131,137 @@ def show_dashboard():
         show_sos_modal()
         return
     
-    # Feature cards
+    # If a feature is active, show it with back button
+    if st.session_state.active_feature:
+        col1, col2 = st.columns([1, 8])
+        with col1:
+            if st.button("← Back", key="back_btn"):
+                st.session_state.active_feature = None
+                st.rerun()
+        
+        if st.session_state.active_feature == 'map':
+            st.markdown('<div class="map-container">', unsafe_allow_html=True)
+            st.markdown('<div class="section-header"><i class="fa-solid fa-map-location-dot"></i> Live Safety Map</div>', unsafe_allow_html=True)
+            show_live_map()
+            st.markdown('</div>', unsafe_allow_html=True)
+        elif st.session_state.active_feature == 'scam':
+            show_scam_checker()
+        elif st.session_state.active_feature == 'phrases':
+            show_phrases()
+        elif st.session_state.active_feature == 'culture':
+            show_cultural_guide()
+        return
+    
+    # Welcome banner - smaller
+    st.markdown(f'''
+    <div class="hero-section">
+        <div class="hero-title">Welcome, {profile.get("name")}!</div>
+        <div class="hero-subtitle">
+            <i class="fa-solid fa-location-dot"></i> {profile.get("destination_city")}, {profile.get("destination_country")} | 
+            <i class="fa-solid fa-heart"></i> {profile.get("interest", "Exploring")}
+        </div>
+    </div>
+    ''', unsafe_allow_html=True)
+    
+    # Feature cards - instant switching
     st.markdown('<div class="dashboard-grid">', unsafe_allow_html=True)
     
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
     
     with col1:
-        if st.button("🗺️ Live Safety Map\n\nSee police stations & safe zones", key="map_btn", use_container_width=True):
-            st.session_state.show_map = True
+        st.markdown('''
+        <div class="feature-card">
+            <div class="card-icon"><i class="fa-solid fa-map-location-dot"></i></div>
+            <div class="card-title">Live Safety Map</div>
+            <div class="card-desc">Police stations & safe zones</div>
+        </div>
+        ''', unsafe_allow_html=True)
+        if st.button("Open Map", key="map_btn", use_container_width=True):
+            st.session_state.active_feature = 'map'
+            st.rerun()
     
     with col2:
-        if st.button("💰 Scam Price Checker\n\nCheck if you're being scammed", key="scam_btn", use_container_width=True):
-            st.session_state.show_scam_checker = not st.session_state.show_scam_checker
+        st.markdown('''
+        <div class="feature-card">
+            <div class="card-icon"><i class="fa-solid fa-magnifying-glass-dollar"></i></div>
+            <div class="card-title">Scam Checker</div>
+            <div class="card-desc">Check if you're being scammed</div>
+        </div>
+        ''', unsafe_allow_html=True)
+        if st.button("Check Prices", key="scam_btn", use_container_width=True):
+            st.session_state.active_feature = 'scam'
+            st.rerun()
     
     with col3:
-        if st.button("💬 Essential Phrases\n\n15 life-saving words", key="phrase_btn", use_container_width=True):
-            st.session_state.show_phrases = not st.session_state.show_phrases
+        st.markdown('''
+        <div class="feature-card">
+            <div class="card-icon"><i class="fa-solid fa-language"></i></div>
+            <div class="card-title">Essential Phrases</div>
+            <div class="card-desc">15 life-saving words</div>
+        </div>
+        ''', unsafe_allow_html=True)
+        if st.button("Learn Phrases", key="phrase_btn", use_container_width=True):
+            st.session_state.active_feature = 'phrases'
+            st.rerun()
+    
+    with col4:
+        st.markdown('''
+        <div class="feature-card">
+            <div class="card-icon"><i class="fa-solid fa-earth-americas"></i></div>
+            <div class="card-title">Cultural Guide</div>
+            <div class="card-desc">Do's and Don'ts</div>
+        </div>
+        ''', unsafe_allow_html=True)
+        if st.button("View Guide", key="culture_btn", use_container_width=True):
+            st.session_state.active_feature = 'culture'
+            st.rerun()
     
     st.markdown('</div>', unsafe_allow_html=True)
     
-    # Show active sections
-    if st.session_state.get('show_map'):
-        st.markdown('<div class="map-container">', unsafe_allow_html=True)
-        st.markdown('<h2 style="color:#667eea;margin-bottom:1rem;">🗺️ Live Safety Map</h2>', unsafe_allow_html=True)
-        show_live_map()
-        st.markdown('</div>', unsafe_allow_html=True)
+    # SOS Button (fixed position via HTML)
+    st.markdown('''
+    <div class="sos-button">
+        <button class="sos-btn" onclick="document.querySelector('[data-testid=stButton] button').click()" title="Emergency SOS">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        </button>
+    </div>
+    ''', unsafe_allow_html=True)
     
-    if st.session_state.show_scam_checker:
-        show_scam_checker()
+    # Hidden SOS button for Streamlit
+    if st.button("SOS", key="sos_main", help="Emergency Help"):
+        st.session_state.sos_active = True
+        st.rerun()
     
-    if st.session_state.show_phrases:
-        show_phrases()
-    
-    # Cultural guide
-    if st.button("🌍 Cultural Respect Guide", use_container_width=True):
-        st.session_state.show_culture = not st.session_state.show_culture
-    
-    if st.session_state.get('show_culture'):
-        show_cultural_guide()
-    
-    # AI Assistant
+    # AI Assistant section
     st.markdown("---")
-    st.markdown("### 🤖 AI Safety Assistant")
+    st.markdown('<div class="section-header"><i class="fa-solid fa-robot"></i> AI Safety Assistant</div>', unsafe_allow_html=True)
     
     question = st.text_area(
         "Ask anything about safety...",
         placeholder=f"e.g., Is it safe to visit street food markets at night as a {profile.get('gender')} in {profile.get('destination_city')}?",
-        height=100
+        height=80,
+        label_visibility="collapsed"
     )
     
-    if st.button("Get Personalized Advice"):
+    if st.button("Get Personalized Advice", use_container_width=True):
         if question:
             groq_client = init_groq()
-            with st.spinner("Analyzing based on your profile..."):
+            with st.spinner("Analyzing..."):
                 if groq_client:
                     try:
                         response = groq_client.chat.completions.create(
                             messages=[
-                                {"role": "system", "content": f"You are a travel safety expert. User is {profile.get('name')}, {profile.get('gender')}, {profile.get('age_range')}, visiting {profile.get('destination_city')}, {profile.get('destination_country')}. Provide specific safety advice."},
+                                {"role": "system", "content": f"You are a travel safety expert. User is {profile.get('name')}, {profile.get('gender')}, {profile.get('age_range')}, visiting {profile.get('destination_city')}, {profile.get('destination_country')}. Provide specific, concise safety advice."},
                                 {"role": "user", "content": question}
                             ],
                             model="llama-3.3-70b-versatile",
                             temperature=0.6,
-                            max_tokens=400
+                            max_tokens=300
                         )
                         advice = response.choices[0].message.content
                         st.markdown(f'<div class="alert-success">{advice}</div>', unsafe_allow_html=True)
                     except:
-                        st.error("AI temporarily unavailable. Please try the map and scam checker features!")
+                        st.error("AI temporarily unavailable. Please try the other features!")
                 else:
                     st.warning("Add GROQ_API_KEY to Streamlit secrets for AI features")
 
@@ -1076,3 +1274,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
