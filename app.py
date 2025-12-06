@@ -4,7 +4,7 @@ import os
 from groq import Groq
 from PIL import Image, ImageDraw, ImageFont
 import easyocr
-from googletrans import Translator
+from deep_translator import GoogleTranslator
 from gtts import gTTS
 import speech_recognition as sr
 import tempfile
@@ -238,7 +238,7 @@ def translate_image_text(image, source_lang='hi', target_lang='en'):
     try:
         # Initialize OCR and translator
         reader = easyocr.Reader([source_lang, 'en'])
-        translator = Translator()
+        translator = GoogleTranslator(source=source_lang, target=target_lang)
         
         # Convert PIL image to format easyocr expects
         img_array = np.array(image)
@@ -262,8 +262,7 @@ def translate_image_text(image, source_lang='hi', target_lang='en'):
             if prob > 0.5:  # Only use confident detections
                 # Translate text
                 try:
-                    translated = translator.translate(text, src=source_lang, dest=target_lang)
-                    translated_text = translated.text
+                    translated_text = translator.translate(text)
                 except:
                     translated_text = text
                 
@@ -542,12 +541,12 @@ def main():
                     
                     with st.spinner("Translating..."):
                         try:
-                            translator = Translator()
-                            translated = translator.translate(english_text, src='en', dest=target)
+                            translator = GoogleTranslator(source='en', target=target)
+                            translated_text = translator.translate(english_text)
                             
-                            st.success(f"**Translation:** {translated.text}")
+                            st.success(f"**Translation:** {translated_text}")
                             
-                            audio_file = text_to_speech(translated.text, target)
+                            audio_file = text_to_speech(translated_text, target)
                             if audio_file:
                                 st.audio(audio_file)
                         except Exception as e:
@@ -573,12 +572,12 @@ def main():
                     
                     with st.spinner("Translating..."):
                         try:
-                            translator = Translator()
-                            translated = translator.translate(local_text, src=source, dest='en')
+                            translator = GoogleTranslator(source=source, target='en')
+                            translated_text = translator.translate(local_text)
                             
-                            st.success(f"**Translation:** {translated.text}")
+                            st.success(f"**Translation:** {translated_text}")
                             
-                            audio_file = text_to_speech(translated.text, 'en')
+                            audio_file = text_to_speech(translated_text, 'en')
                             if audio_file:
                                 st.audio(audio_file)
                         except Exception as e:
@@ -596,4 +595,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
