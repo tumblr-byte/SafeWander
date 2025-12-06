@@ -979,65 +979,122 @@ def show_phrases():
     st.markdown(f'<div class="section-header"><i class="fa-solid fa-language"></i> 15 Essential Phrases for {country}</div>', unsafe_allow_html=True)
     st.markdown('<p style="color:#64748b;font-size:0.8rem;margin-bottom:1rem;">Click the speaker button to hear pronunciation</p>', unsafe_allow_html=True)
     
-    # Create phrase cards with unique IDs for TTS
+    # Build all phrase cards HTML
+    phrases_html = ""
     for idx, (local, script, meaning) in enumerate(phrases):
-        st.markdown(f'''
+        # Escape single quotes for JavaScript
+        local_escaped = local.replace("'", "\\'")
+        phrases_html += f'''
         <div class="phrase-card">
             <div>
                 <div class="phrase-local">{local}</div>
                 <div class="phrase-meaning">{script} = {meaning}</div>
             </div>
-            <button class="phrase-audio" onclick="speakPhrase('{local}', '{lang_code}', this)" title="Click to hear pronunciation">
+            <button class="phrase-audio" onclick="speakPhrase('{local_escaped}', '{lang_code}')" title="Click to hear pronunciation">
                 <i class="fa-solid fa-volume-high"></i>
             </button>
         </div>
-        ''', unsafe_allow_html=True)
+        '''
     
-    # Working TTS JavaScript with proper error handling
+    # Everything in ONE components.html so JS and buttons are in same context
     components.html(f"""
-    <script>
-    function speakPhrase(text, langCode, button) {{
-        if ('speechSynthesis' in window) {{
-            // Cancel any ongoing speech
-            window.speechSynthesis.cancel();
-            
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = langCode;
-            utterance.rate = 0.8;
-            utterance.pitch = 1.0;
-            utterance.volume = 1.0;
-            
-            // Visual feedback - change button color
-            button.style.backgroundColor = '#5b21b6';
-            button.innerHTML = '<i class="fa-solid fa-volume-high" style="animation: pulse 0.5s infinite;"></i>';
-            
-            utterance.onend = function() {{
-                button.style.backgroundColor = '#7c3aed';
-                button.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
-            }};
-            
-            utterance.onerror = function(event) {{
-                button.style.backgroundColor = '#7c3aed';
-                button.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
-                console.error('Speech error:', event.error);
-            }};
-            
-            // Small delay to ensure speech synthesis is ready
-            setTimeout(function() {{
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+        <style>
+            * {{ font-family: 'Poppins', sans-serif; margin: 0; padding: 0; box-sizing: border-box; }}
+            body {{ background: transparent; }}
+            .phrase-card {{
+                background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+                border-radius: 12px;
+                padding: 1rem;
+                margin: 0.6rem 0;
+                border-left: 4px solid #7c3aed;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }}
+            .phrase-local {{
+                font-size: 1.1rem;
+                font-weight: 700;
+                color: #5b21b6;
+            }}
+            .phrase-meaning {{
+                font-size: 0.85rem;
+                color: #6d28d9;
+            }}
+            .phrase-audio {{
+                background: #7c3aed;
+                color: white;
+                border: none;
+                border-radius: 50%;
+                width: 45px;
+                height: 45px;
+                cursor: pointer;
+                font-size: 1.1rem;
+                transition: all 0.2s;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+            }}
+            .phrase-audio:hover {{
+                background: #5b21b6;
+                transform: scale(1.1);
+            }}
+            .phrase-audio:active {{
+                transform: scale(0.95);
+            }}
+            .phrase-audio.speaking {{
+                background: #5b21b6;
+                animation: pulse 0.5s infinite;
+            }}
+            @keyframes pulse {{
+                0%, 100% {{ opacity: 1; transform: scale(1); }}
+                50% {{ opacity: 0.7; transform: scale(1.05); }}
+            }}
+        </style>
+    </head>
+    <body>
+        {phrases_html}
+        <script>
+        function speakPhrase(text, langCode) {{
+            if ('speechSynthesis' in window) {{
+                // Cancel any ongoing speech
+                window.speechSynthesis.cancel();
+                
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = langCode;
+                utterance.rate = 0.7;
+                utterance.pitch = 1.0;
+                utterance.volume = 1.0;
+                
+                // Find the button that was clicked
+                const buttons = document.querySelectorAll('.phrase-audio');
+                buttons.forEach(btn => btn.classList.remove('speaking'));
+                event.currentTarget.classList.add('speaking');
+                
+                utterance.onend = function() {{
+                    event.currentTarget.classList.remove('speaking');
+                }};
+                
+                utterance.onerror = function(e) {{
+                    console.error('Speech error:', e);
+                    event.currentTarget.classList.remove('speaking');
+                }};
+                
+                // Speak immediately
                 window.speechSynthesis.speak(utterance);
-            }}, 100);
-        }} else {{
-            alert('Text-to-speech is not supported in your browser. Please try Chrome or Edge.');
+            }} else {{
+                alert('Text-to-speech not supported. Try Chrome or Edge browser.');
+            }}
         }}
-    }}
-    </script>
-    <style>
-    @keyframes pulse {{
-        0%, 100% {{ opacity: 1; }}
-        50% {{ opacity: 0.5; }}
-    }}
-    </style>
-    """, height=0)
+        </script>
+    </body>
+    </html>
+    """, height=len(phrases) * 75 + 20)
 
 # Cultural Guide
 def show_cultural_guide():
@@ -1274,4 +1331,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
