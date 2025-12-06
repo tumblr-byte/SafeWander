@@ -4,6 +4,7 @@ easyocr==1.7.0
 deep-translator==1.11.4
 gTTS==2.5.0
 SpeechRecognition==3.10.1
+PyAudio==0.2.14
 Pillow==10.2.0
 numpy==1.26.3
 torch==2.1.2
