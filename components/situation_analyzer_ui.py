@@ -106,7 +106,7 @@ def show_situation_analyzer():
     """, unsafe_allow_html=True)
     
     # Input section
-    st.subheader("<i class='fas fa-edit'></i> Describe Your Situation", unsafe_allow_html=True)
+    st.markdown("## <i class='fas fa-edit'></i> Describe Your Situation", unsafe_allow_html=True)
     
     # Voice input section
     if AUDIO_AVAILABLE:

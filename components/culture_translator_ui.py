@@ -119,7 +119,7 @@ def show_culture_translator():
                     st.session_state.selected_phrase = phrase_text
     
     # Translation input
-    st.subheader("<i class='fas fa-comment'></i> Your Phrase", unsafe_allow_html=True)
+    st.markdown("## <i class='fas fa-comment'></i> Your Phrase", unsafe_allow_html=True)
     
     # Voice input
     if AUDIO_AVAILABLE:
