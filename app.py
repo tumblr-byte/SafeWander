@@ -6,281 +6,234 @@ from datetime import datetime
 
 # Page config
 st.set_page_config(
-    page_title="SafeWander - AI Travel Safety Companion",
+    page_title="SafeWander - Your Personalized Travel Safety Companion",
     page_icon="🛡️",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Stunning CSS
+# CSS
 st.markdown("""
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
     
-    * {
-        font-family: 'Inter', sans-serif;
-    }
+    * { font-family: 'Inter', sans-serif; }
     
-    .hero-section {
-        text-align: center;
-        padding: 3rem 0 2rem 0;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 24px;
-        margin-bottom: 3rem;
-        color: white;
-        box-shadow: 0 20px 60px rgba(102, 126, 234, 0.3);
-    }
-    
-    .hero-title {
-        font-size: 3.5rem;
-        font-weight: 800;
-        margin: 0;
-        text-shadow: 0 2px 20px rgba(0,0,0,0.2);
-    }
-    
-    .hero-subtitle {
-        font-size: 1.3rem;
-        margin-top: 1rem;
-        opacity: 0.95;
-        font-weight: 500;
-    }
-    
-    .hero-tagline {
-        font-size: 1rem;
-        margin-top: 0.5rem;
-        opacity: 0.85;
-    }
-    
-    /* Stats Bar */
-    .stats-bar {
-        display: flex;
-        justify-content: space-around;
+    .onboarding-container {
+        max-width: 700px;
+        margin: 3rem auto;
+        padding: 3rem;
         background: white;
-        border-radius: 16px;
-        padding: 2rem;
-        margin: 2rem 0;
-        box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        border-radius: 24px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.15);
     }
     
-    .stat-item {
-        text-align: center;
-    }
-    
-    .stat-number {
+    .onboarding-title {
         font-size: 2.5rem;
         font-weight: 800;
+        text-align: center;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
+        margin-bottom: 1rem;
     }
     
-    .stat-label {
+    .onboarding-subtitle {
+        text-align: center;
         color: #64748b;
-        font-size: 0.95rem;
-        margin-top: 0.5rem;
-        font-weight: 600;
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
     }
     
-    /* Question Input */
-    .question-container {
-        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-        border-radius: 20px;
-        padding: 2.5rem;
+    .progress-bar {
+        width: 100%;
+        height: 8px;
+        background: #e2e8f0;
+        border-radius: 10px;
         margin: 2rem 0;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-        border: 2px solid #e2e8f0;
+        overflow: hidden;
     }
     
-    .input-label {
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        border-radius: 10px;
+        transition: width 0.3s ease;
+    }
+    
+    .welcome-banner {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 20px;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
+    
+    .welcome-greeting {
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+    }
+    
+    .welcome-subtitle {
+        font-size: 1.1rem;
+        opacity: 0.95;
+    }
+    
+    .priority-alert {
+        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+        border-left: 5px solid #ef4444;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+    }
+    
+    .priority-title {
         font-size: 1.2rem;
         font-weight: 700;
-        color: #1e293b;
+        color: #991b1b;
         margin-bottom: 1rem;
         display: flex;
         align-items: center;
         gap: 0.5rem;
     }
     
-    /* Threat Badges */
-    .threat-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.8rem 2rem;
-        border-radius: 50px;
-        font-weight: 800;
-        font-size: 1.2rem;
-        margin: 1.5rem 0;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-        animation: pulse 2s ease-in-out infinite;
-    }
-    
-    @keyframes pulse {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.03); }
-    }
-    
-    .threat-high {
-        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-        color: white;
-    }
-    
-    .threat-medium {
-        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-        color: white;
-    }
-    
-    .threat-low {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        color: white;
-    }
-    
-    /* Response Cards */
-    .response-section {
+    .priority-item {
         background: white;
-        border-radius: 20px;
-        padding: 2.5rem;
-        margin: 2rem 0;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-        border-left: 6px solid #667eea;
+        padding: 1rem;
+        border-radius: 10px;
+        margin: 0.8rem 0;
+        color: #7f1d1d;
+        font-size: 0.95rem;
+        line-height: 1.6;
     }
     
-    .answer-box {
+    .recommendation-card {
         background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
         border-radius: 16px;
-        padding: 2rem;
+        padding: 1.5rem;
         margin: 1.5rem 0;
         border-left: 5px solid #3b82f6;
     }
     
-    .answer-box h4 {
-        color: #1e40af;
-        font-size: 1.3rem;
-        margin: 0 0 1rem 0;
+    .rec-title {
+        font-size: 1.2rem;
         font-weight: 700;
-    }
-    
-    .answer-text {
         color: #1e40af;
-        font-size: 1.15rem;
-        line-height: 1.8;
-        font-weight: 500;
-    }
-    
-    .action-box {
-        background: #f8fafc;
-        border-radius: 16px;
-        padding: 2rem;
-        margin: 1.5rem 0;
-    }
-    
-    .action-box h4 {
-        color: #1e293b;
-        font-size: 1.3rem;
-        margin: 0 0 1.5rem 0;
-        font-weight: 700;
-    }
-    
-    .action-item {
-        background: white;
-        padding: 1.2rem 1.5rem;
-        margin: 1rem 0;
-        border-radius: 12px;
-        border-left: 4px solid #667eea;
-        display: flex;
-        align-items: flex-start;
-        gap: 1rem;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        transition: all 0.3s ease;
-    }
-    
-    .action-item:hover {
-        transform: translateX(5px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-    
-    .action-number {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        font-weight: 800;
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
+        margin-bottom: 1rem;
         display: flex;
         align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
+        gap: 0.5rem;
     }
     
-    .action-text {
-        color: #334155;
-        font-size: 1.1rem;
+    .rec-item {
+        background: white;
+        padding: 1rem;
+        border-radius: 10px;
+        margin: 0.8rem 0;
+        color: #1e40af;
+        font-size: 0.95rem;
         line-height: 1.6;
-        font-weight: 500;
     }
     
-    .cultural-box {
+    .cultural-bridge {
         background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
         border-radius: 16px;
-        padding: 2rem;
+        padding: 1.5rem;
         margin: 1.5rem 0;
         border-left: 5px solid #f59e0b;
     }
     
-    .cultural-box h4 {
+    .cultural-title {
+        font-size: 1.2rem;
+        font-weight: 700;
         color: #92400e;
-        font-size: 1.3rem;
-        margin: 0 0 1rem 0;
-        font-weight: 700;
+        margin-bottom: 1rem;
     }
     
-    .cultural-text {
-        color: #78350f;
-        font-size: 1.1rem;
-        line-height: 1.8;
-        font-weight: 500;
-    }
-    
-    .emergency-box-main {
-        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-        border-radius: 16px;
-        padding: 2rem;
-        margin: 1.5rem 0;
-        border-left: 5px solid #dc2626;
-    }
-    
-    .emergency-box-main h4 {
-        color: #991b1b;
-        font-size: 1.4rem;
-        margin: 0 0 1rem 0;
-        font-weight: 800;
-    }
-    
-    .emergency-number {
+    .cultural-tip {
         background: white;
-        padding: 1rem 1.5rem;
-        border-radius: 12px;
+        padding: 1rem;
+        border-radius: 10px;
         margin: 0.8rem 0;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        color: #78350f;
+        font-size: 0.95rem;
+        line-height: 1.6;
     }
     
-    .emergency-label {
-        color: #7f1d1d;
+    .phrase-highlight {
+        background: linear-gradient(135deg, #ddd6fe 0%, #c7d2fe 100%);
+        border-radius: 12px;
+        padding: 1.2rem;
+        margin: 1rem 0;
+        border-left: 4px solid #7c3aed;
+    }
+    
+    .phrase-need {
+        font-size: 0.85rem;
+        color: #5b21b6;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .phrase-text {
+        font-size: 1.2rem;
         font-weight: 700;
-        font-size: 1.05rem;
+        color: #6d28d9;
     }
     
-    .emergency-num {
-        color: #dc2626;
-        font-weight: 800;
-        font-size: 1.5rem;
+    .question-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
     }
     
-    /* Sidebar */
+    .threat-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.6rem 1.5rem;
+        border-radius: 30px;
+        font-weight: 700;
+        font-size: 1rem;
+        margin: 1rem 0;
+    }
+    
+    .threat-high { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; }
+    .threat-medium { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; }
+    .threat-low { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; }
+    
+    .action-item {
+        display: flex;
+        gap: 0.8rem;
+        margin: 0.8rem 0;
+        align-items: flex-start;
+    }
+    
+    .action-num {
+        background: #667eea;
+        color: white;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.85rem;
+        flex-shrink: 0;
+    }
+    
+    .action-text {
+        font-size: 0.95rem;
+        color: #475569;
+        line-height: 1.6;
+    }
+    
     [data-testid="stSidebar"] {
         background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
     }
@@ -289,113 +242,59 @@ st.markdown("""
         color: white !important;
     }
     
-    .sidebar-section {
-        background: rgba(255,255,255,0.1);
-        padding: 1.2rem;
-        border-radius: 12px;
-        margin: 1rem 0;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255,255,255,0.2);
-    }
-    
-    .sidebar-title {
-        font-size: 1.1rem;
-        font-weight: 700;
-        margin-bottom: 1rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-    
-    .example-item {
-        background: rgba(255,255,255,0.05);
-        padding: 0.8rem;
-        border-radius: 8px;
-        margin: 0.5rem 0;
-        font-size: 0.95rem;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        border-left: 3px solid transparent;
-    }
-    
-    .example-item:hover {
-        background: rgba(255,255,255,0.15);
-        border-left-color: #667eea;
-        transform: translateX(5px);
-    }
-    
-    /* Button Styles */
     .stButton>button {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         font-weight: 700;
         border: none;
-        padding: 1rem 3rem;
-        border-radius: 50px;
-        font-size: 1.2rem;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-        text-transform: uppercase;
-        letter-spacing: 1px;
+        padding: 1rem 2.5rem;
+        border-radius: 30px;
+        font-size: 1.1rem;
+        transition: all 0.3s;
+        width: 100%;
     }
     
     .stButton>button:hover {
-        transform: translateY(-3px);
+        transform: translateY(-2px);
         box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
     }
     
-    /* Conversation History */
-    .history-item {
-        background: white;
-        border-radius: 16px;
-        padding: 2rem;
-        margin: 1.5rem 0;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-        border-left: 5px solid #e2e8f0;
-        transition: all 0.3s ease;
-    }
-    
-    .history-item:hover {
-        box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-        transform: translateY(-2px);
-    }
-    
-    .history-question {
-        color: #64748b;
-        font-size: 1rem;
-        font-weight: 600;
-        margin-bottom: 1rem;
-        font-style: italic;
-    }
-    
-    /* Hide Streamlit elements */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     .stDeployButton {display: none;}
-    
-    /* Animations */
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    
-    .response-section {
-        animation: fadeIn 0.6s ease-out;
-    }
 </style>
 """, unsafe_allow_html=True)
 
-# Session state
+# Initialize session state
+if 'profile_complete' not in st.session_state:
+    st.session_state.profile_complete = False
+if 'profile' not in st.session_state:
+    st.session_state.profile = {}
+if 'onboarding_step' not in st.session_state:
+    st.session_state.onboarding_step = 0
 if 'conversation_history' not in st.session_state:
     st.session_state.conversation_history = []
-if 'current_country' not in st.session_state:
-    st.session_state.current_country = "India"
+
+# Countries and cities
+COUNTRIES = {
+    "India": ["Delhi", "Mumbai", "Bangalore", "Goa", "Jaipur", "Agra", "Kolkata"],
+    "Thailand": ["Bangkok", "Phuket", "Chiang Mai", "Pattaya", "Krabi"],
+    "Mexico": ["Mexico City", "Cancun", "Playa del Carmen", "Guadalajara", "Oaxaca"],
+    "USA": ["New York", "Los Angeles", "Las Vegas", "Miami", "San Francisco"],
+    "Brazil": ["Rio de Janeiro", "São Paulo", "Salvador", "Brasília"]
+}
+
+LANGUAGES = ["English", "Spanish", "Portuguese", "French", "German", "Mandarin", "Hindi", "Japanese", "Korean", "Arabic"]
+
+INTERESTS = {
+    "🏖️ Beach & Relaxation": "beaches",
+    "🏛️ Culture & History": "culture",
+    "🍜 Food & Cuisine": "food",
+    "🎉 Nightlife & Entertainment": "nightlife",
+    "💼 Business": "business",
+    "🧘 Spiritual & Wellness": "wellness",
+    "🏔️ Adventure & Nature": "adventure"
+}
 
 # Load data
 @st.cache_data
@@ -405,7 +304,7 @@ def load_safety_data():
             return json.load(f)
     return {"countries": ["India", "Thailand", "Mexico", "USA", "Brazil"]}
 
-# Initialize Groq
+# Init Groq
 def init_groq():
     try:
         api_key = st.secrets.get("GROQ_API_KEY", os.getenv("GROQ_API_KEY"))
@@ -415,65 +314,141 @@ def init_groq():
         pass
     return None
 
-# RAG Search
-def get_context(query, country, data):
-    """Get relevant safety context for the query"""
-    query_lower = query.lower()
-    context = []
+# Get personalized priorities
+def get_personalized_priorities(profile, data):
+    priorities = []
     
-    # Transport scams
+    # Gender-based
+    if profile.get('gender') == 'Female':
+        priorities.append("🚺 Solo female traveler safety: Avoid isolated areas after dark, use licensed taxis, stay in well-reviewed accommodations")
+    
+    # Age-based
+    age = profile.get('age_range', '')
+    if age in ['18-25', '26-35']:
+        priorities.append("🎒 Young traveler alert: Common targets for scams. Always verify prices and use official services")
+    elif age in ['50+']:
+        priorities.append("👴 Senior traveler: Take extra care with mobility, avoid crowded areas during peak hours")
+    
+    # Interest-based
+    interest = profile.get('interest', '')
+    if interest == 'nightlife':
+        priorities.append("🌙 Nightlife safety: Never leave drinks unattended, use official taxis, travel in groups")
+    elif interest == 'food':
+        priorities.append("🍽️ Food explorer: Eat at busy stalls, avoid pre-cut fruits, drink bottled water only")
+    elif interest == 'adventure':
+        priorities.append("⛰️ Adventure safety: Use licensed guides, inform someone of your plans, check weather")
+    
+    # Location-specific
+    destination = profile.get('destination_country', '')
     for scam in data.get("transport_scams", []):
-        if scam.get("country") == country:
-            if any(word in query_lower for word in ["taxi", "driver", "uber", "auto", "transport", "fare", "price", "₹", "rupees", "km"]):
-                context.append(f"Transport: Normal {scam.get('normal_rate')}, Scam {scam.get('scam_rate')}. {scam.get('safety_advice')}")
+        if scam.get("country") == destination:
+            priorities.append(f"🚖 {scam.get('scam_type', 'Transport scam')}: {scam.get('safety_advice', 'Be cautious')}")
+            break
     
-    # Harassment
-    for safety in data.get("harassment_safety", []):
-        if any(word in query_lower for word in ["follow", "stalk", "harass", "touch", "danger", "scared", "afraid"]):
-            context.append(f"Safety: {safety.get('situation')} - Threat: {safety.get('threat_level')}. Actions: {', '.join(safety.get('immediate_actions', [])[:3])}")
+    return priorities[:4]
+
+# Get personalized recommendations
+def get_personalized_recommendations(profile, data):
+    recs = []
+    interest = profile.get('interest', '')
+    destination = profile.get('destination_country', '')
+    city = profile.get('destination_city', '')
     
-    # Emergency numbers
-    emergency = data.get("emergency_numbers", {}).get(country, {})
-    if emergency:
-        context.append(f"Emergency: {emergency}")
+    if interest == 'food':
+        recs.append(f"🍜 Best street food areas in {city}: Look for crowded local spots, morning markets are safest")
+        recs.append("💡 Food safety: Choose freshly cooked items, avoid raw salads, peel fruits yourself")
+    elif interest == 'culture':
+        recs.append(f"🏛️ Must-visit cultural sites in {city}: Research dress codes, hire licensed guides")
+        recs.append("📸 Photography etiquette: Always ask permission at religious sites")
+    elif interest == 'nightlife':
+        recs.append(f"🎉 Safe nightlife zones in {city}: Stick to tourist-friendly areas, avoid unlicensed venues")
+        recs.append("🚕 Night transport: Pre-book rides, share trip details with friends")
+    elif interest == 'beaches':
+        recs.append(f"🏖️ Best beaches near {city}: Use public beaches during day, avoid isolated areas")
+        recs.append("⚠️ Beach safety: Don't leave valuables unattended, watch for strong currents")
+    else:
+        recs.append(f"✨ Top experiences in {city}: Research beforehand, use official tour operators")
+        recs.append("🗺️ Navigation: Download offline maps, keep hotel card with address")
     
-    # Cultural info
+    return recs
+
+# Get cultural bridge tips
+def get_cultural_bridge(profile, data):
+    home = profile.get('home_country', '')
+    destination = profile.get('destination_country', '')
+    
+    tips = []
+    
     for culture in data.get("cultural_guidelines", []):
-        if culture.get("country") == country:
-            context.append(f"Culture: {culture.get('dress')}. Etiquette: {culture.get('etiquette')}")
+        if culture.get("country") == destination:
+            tips.append(f"👕 Dress code: {culture.get('dress', 'Dress modestly')}")
+            tips.append(f"🤝 Local customs: {culture.get('etiquette', 'Be respectful')}")
     
-    # Price reference
-    prices = data.get("price_reference", {}).get(country, {})
-    if prices:
-        context.append(f"Typical prices: {prices}")
+    # Add language-specific
+    if home == "USA" and destination == "India":
+        tips.append("💬 Communication: Indians are friendly but personal space is different. Head wobble means yes!")
+    elif home == "USA" and destination == "Thailand":
+        tips.append("🙏 Respect: Never touch someone's head or point feet at people/Buddha images")
     
-    return "\n".join(context[:5])
+    return tips if tips else ["🌍 Research local customs before arriving", "📱 Download translation app"]
 
-# AI Response
-def get_ai_response(query, country, groq_client, data):
-    """Get comprehensive AI safety advice"""
+# Get essential phrases
+def get_priority_phrases(profile):
+    interest = profile.get('interest', '')
+    destination = profile.get('destination_country', '')
     
-    context = get_context(query, country, data)
+    phrases = []
     
-    system_prompt = f"""You are SafeWander AI, an expert travel safety advisor for {country}.
+    if destination == "India":
+        if interest == 'food':
+            phrases.append(("For food vendors", "Kitna hai?", "How much?"))
+            phrases.append(("Important", "Teekha nahi", "Not spicy"))
+        else:
+            phrases.append(("Essential", "Namaste", "Hello"))
+            phrases.append(("Critical", "Madad karo!", "Help!"))
+    elif destination == "Thailand":
+        if interest == 'nightlife':
+            phrases.append(("Safety", "Tao rai?", "How much?"))
+            phrases.append(("Emergency", "Chuay duay!", "Help!"))
+        else:
+            phrases.append(("Greeting", "Sawasdee", "Hello"))
+            phrases.append(("Respect", "Khob khun", "Thank you"))
+    elif destination == "Mexico":
+        phrases.append(("Essential", "¿Cuánto cuesta?", "How much?"))
+        phrases.append(("Emergency", "¡Ayuda!", "Help!"))
+    
+    return phrases if phrases else [("Basic", "Hello", "Hello"), ("Basic", "Thank you", "Thank you")]
 
-Analyze the traveler's situation and respond in this EXACT structure:
+# AI response with profile context
+def get_ai_response(query, profile, groq_client, data):
+    # Build personalized context
+    name = profile.get('name', 'Traveler')
+    age = profile.get('age_range', '')
+    gender = profile.get('gender', '')
+    interest = profile.get('interest', '')
+    destination = f"{profile.get('destination_city', '')}, {profile.get('destination_country', '')}"
+    
+    context_parts = [f"Traveler profile: {name}, {age}, {gender}, interested in {interest}, visiting {destination}"]
+    
+    # Add relevant scams
+    for scam in data.get("transport_scams", []):
+        if scam.get("country") == profile.get('destination_country'):
+            context_parts.append(f"{scam.get('scam_type')}: Normal {scam.get('normal_rate')}, Scam {scam.get('scam_rate')}")
+    
+    context = "\n".join(context_parts[:5])
+    
+    system_prompt = f"""You are SafeWander AI helping {name}, a {age} {gender} traveler exploring {interest} in {destination}.
 
-1. THREAT LEVEL: Determine if this is HIGH, MEDIUM, or LOW threat
-2. QUICK ASSESSMENT: 2-3 sentences explaining the situation clearly
-3. IMMEDIATE ACTIONS: 3-4 specific, actionable steps they should take NOW
-4. CULTURAL CONTEXT: Brief relevant cultural insight that helps them understand the situation better
-5. EMERGENCY CONTACTS: Relevant emergency numbers
+Provide personalized advice:
+1. Threat level (HIGH/MEDIUM/LOW)
+2. Brief assessment (2-3 sentences)
+3. 3-4 specific actions tailored to their profile
+4. Consider their gender, age, and interests in the advice
 
-Be direct, clear, and prioritize traveler safety. Use the context data provided."""
+Be concise and actionable."""
 
-    user_prompt = f"""Situation in {country}: {query}
-
-Available Context:
-{context}
-
-Provide comprehensive safety advice."""
-
+    user_prompt = f"{query}\n\nContext: {context}"
+    
     try:
         if groq_client:
             response = groq_client.chat.completions.create(
@@ -483,283 +458,259 @@ Provide comprehensive safety advice."""
                 ],
                 model="llama-3.3-70b-versatile",
                 temperature=0.6,
-                max_tokens=600
+                max_tokens=500
             )
             return response.choices[0].message.content
-        else:
-            return f"Unable to analyze. Please set GROQ_API_KEY. Context: {context}"
-    except Exception as e:
-        return f"Error: {str(e)}"
+        return f"Analysis: Based on your profile, be cautious. {context}"
+    except:
+        return f"Unable to analyze. Stay alert."
 
-# Parse response into structured format
-def parse_response(response_text):
-    """Parse AI response into structured components"""
-    
-    # Detect threat level
+# Parse response
+def parse_response(text):
     threat = "MEDIUM"
-    if "HIGH" in response_text.upper() or "DANGER" in response_text.upper() or "URGENT" in response_text.upper():
+    if "HIGH" in text.upper():
         threat = "HIGH"
-    elif "LOW" in response_text.upper() or "SAFE" in response_text.upper() or "MINOR" in response_text.upper():
+    elif "LOW" in text.upper():
         threat = "LOW"
     
-    # Split into sections (simple parsing)
-    lines = response_text.split('\n')
-    
+    lines = [l.strip() for l in text.split('\n') if l.strip()]
     assessment = []
     actions = []
-    cultural = []
-    emergency = []
-    
-    current_section = "assessment"
     
     for line in lines:
-        line = line.strip()
-        if not line:
-            continue
-            
-        line_lower = line.lower()
-        
-        # Detect section changes
-        if any(word in line_lower for word in ["action", "step", "do", "should"]):
-            current_section = "actions"
-        elif any(word in line_lower for word in ["culture", "custom", "etiquette", "local"]):
-            current_section = "cultural"
-        elif any(word in line_lower for word in ["emergency", "contact", "police", "ambulance"]):
-            current_section = "emergency"
-        
-        # Add to appropriate section
-        if current_section == "assessment" and len(assessment) < 5:
+        if any(w in line.lower() for w in ["action", "step", "should", "do", "advise"]):
+            clean = line.lstrip('0123456789.-*• ').strip()
+            if clean and len(actions) < 4:
+                actions.append(clean)
+        elif len(assessment) < 3 and not line.startswith(("HIGH", "MEDIUM", "LOW")):
             assessment.append(line)
-        elif current_section == "actions":
-            # Clean up action items
-            clean_line = line.lstrip('0123456789.-*• ').strip()
-            if clean_line and len(actions) < 4:
-                actions.append(clean_line)
-        elif current_section == "cultural" and len(cultural) < 3:
-            cultural.append(line)
-        elif current_section == "emergency" and len(emergency) < 3:
-            emergency.append(line)
     
     return {
         "threat": threat,
-        "assessment": ' '.join(assessment[:3]) if assessment else "Analyzing your situation...",
-        "actions": actions[:4] if actions else ["Stay calm", "Assess the situation", "Seek help if needed"],
-        "cultural": ' '.join(cultural[:2]) if cultural else "Be respectful of local customs.",
-        "emergency": emergency[:2] if emergency else []
+        "assessment": ' '.join(assessment) if assessment else "Analyzing situation...",
+        "actions": actions if actions else ["Stay alert", "Assess situation", "Seek help if needed"]
     }
 
-# Main app
-def main():
-    safety_data = load_safety_data()
-    groq_client = init_groq()
+# Onboarding screens
+def show_onboarding():
+    st.markdown('<div class="onboarding-container">', unsafe_allow_html=True)
     
-    # Hero Section
+    step = st.session_state.onboarding_step
+    total_steps = 7
+    
+    # Progress bar
+    progress = (step / total_steps) * 100
     st.markdown(f"""
-    <div class="hero-section">
-        <div class="hero-title"><i class="fas fa-shield-alt"></i> SafeWander</div>
-        <div class="hero-subtitle">Your AI-Powered Travel Safety Companion</div>
-        <div class="hero-tagline">Preventing scams, harassment, and danger worldwide</div>
+    <div class="progress-bar">
+        <div class="progress-fill" style="width: {progress}%;"></div>
     </div>
     """, unsafe_allow_html=True)
     
-    # Stats Bar
-    st.markdown("""
-    <div class="stats-bar">
-        <div class="stat-item">
-            <div class="stat-number">5</div>
-            <div class="stat-label">Countries Covered</div>
+    st.markdown(f'<p style="text-align:center;color:#64748b;font-size:0.9rem;">Step {step + 1} of {total_steps}</p>', unsafe_allow_html=True)
+    
+    if step == 0:
+        st.markdown('<div class="onboarding-title">🌍 Welcome to SafeWander!</div>', unsafe_allow_html=True)
+        st.markdown('<div class="onboarding-subtitle">Your personalized travel safety companion</div>', unsafe_allow_html=True)
+        st.markdown("---")
+        name = st.text_input("**What's your name?**", placeholder="e.g., Sarah")
+        if st.button("Continue →") and name:
+            st.session_state.profile['name'] = name
+            st.session_state.onboarding_step = 1
+            st.rerun()
+    
+    elif step == 1:
+        st.markdown(f'<div class="onboarding-title">Hi {st.session_state.profile.get("name")}! 👋</div>', unsafe_allow_html=True)
+        st.markdown('<div class="onboarding-subtitle">Where are you from?</div>', unsafe_allow_html=True)
+        home_country = st.selectbox("**Your home country**", list(COUNTRIES.keys()))
+        if st.button("Continue →"):
+            st.session_state.profile['home_country'] = home_country
+            st.session_state.onboarding_step = 2
+            st.rerun()
+    
+    elif step == 2:
+        st.markdown('<div class="onboarding-title">🗣️ Language</div>', unsafe_allow_html=True)
+        language = st.selectbox("**What language do you speak?**", LANGUAGES)
+        if st.button("Continue →"):
+            st.session_state.profile['language'] = language
+            st.session_state.onboarding_step = 3
+            st.rerun()
+    
+    elif step == 3:
+        st.markdown('<div class="onboarding-title">📍 Destination</div>', unsafe_allow_html=True)
+        dest_country = st.selectbox("**Where are you traveling?**", list(COUNTRIES.keys()))
+        dest_city = st.selectbox("**Which city?**", COUNTRIES[dest_country])
+        if st.button("Continue →"):
+            st.session_state.profile['destination_country'] = dest_country
+            st.session_state.profile['destination_city'] = dest_city
+            st.session_state.onboarding_step = 4
+            st.rerun()
+    
+    elif step == 4:
+        st.markdown('<div class="onboarding-title">👤 About You</div>', unsafe_allow_html=True)
+        col1, col2 = st.columns(2)
+        with col1:
+            age = st.selectbox("**Age range**", ["18-25", "26-35", "36-50", "50+"])
+        with col2:
+            gender = st.selectbox("**Gender**", ["Female", "Male", "Non-binary", "Prefer not to say"])
+        if st.button("Continue →"):
+            st.session_state.profile['age_range'] = age
+            st.session_state.profile['gender'] = gender
+            st.session_state.onboarding_step = 5
+            st.rerun()
+    
+    elif step == 5:
+        st.markdown('<div class="onboarding-title">✨ Your Interest</div>', unsafe_allow_html=True)
+        st.markdown('<div class="onboarding-subtitle">What brings you to this destination?</div>', unsafe_allow_html=True)
+        interest = st.radio("**Choose one**", list(INTERESTS.keys()), label_visibility="collapsed")
+        if st.button("Continue →"):
+            st.session_state.profile['interest'] = INTERESTS[interest]
+            st.session_state.onboarding_step = 6
+            st.rerun()
+    
+    elif step == 6:
+        st.markdown('<div class="onboarding-title">🎉 All Set!</div>', unsafe_allow_html=True)
+        st.markdown(f"""
+        <div class="onboarding-subtitle">
+        Great! We'll personalize your experience for<br/>
+        <strong>{st.session_state.profile.get('name')}</strong> exploring 
+        <strong>{st.session_state.profile.get('destination_city')}</strong>!
         </div>
-        <div class="stat-item">
-            <div class="stat-number">100+</div>
-            <div class="stat-label">Scam Types Detected</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-number">24/7</div>
-            <div class="stat-label">AI Protection</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-number">Instant</div>
-            <div class="stat-label">Safety Advice</div>
+        """, unsafe_allow_html=True)
+        
+        if st.button("Start Exploring →"):
+            st.session_state.profile_complete = True
+            st.rerun()
+    
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# Main dashboard
+def show_dashboard():
+    data = load_safety_data()
+    groq_client = init_groq()
+    profile = st.session_state.profile
+    
+    # Welcome banner
+    st.markdown(f"""
+    <div class="welcome-banner">
+        <div class="welcome-greeting">Welcome back, {profile.get('name')}! 👋</div>
+        <div class="welcome-subtitle">
+        You're exploring {profile.get('interest', 'traveling')} in 
+        {profile.get('destination_city')}, {profile.get('destination_country')}
         </div>
     </div>
     """, unsafe_allow_html=True)
     
     # Sidebar
     with st.sidebar:
-        st.markdown('<div class="sidebar-title"><i class="fas fa-globe"></i> Select Country</div>', unsafe_allow_html=True)
-        
-        country = st.selectbox(
-            "Your Current Location",
-            ["India", "Thailand", "Mexico", "USA", "Brazil"],
-            index=0,
-            label_visibility="collapsed"
-        )
-        st.session_state.current_country = country
+        st.markdown("### 👤 Your Profile")
+        st.markdown(f"**From:** {profile.get('home_country')}")
+        st.markdown(f"**Visiting:** {profile.get('destination_city')}")
+        st.markdown(f"**Interest:** {profile.get('interest').title()}")
         
         st.markdown("---")
+        st.markdown("### 🚨 Emergency")
+        emergency = data.get("emergency_numbers", {}).get(profile.get('destination_country'), {})
+        for service, number in emergency.items():
+            st.markdown(f"**{service.title()}:** `{number}`")
         
-        st.markdown('<div class="sidebar-section">', unsafe_allow_html=True)
-        st.markdown('<div class="sidebar-title"><i class="fas fa-lightbulb"></i> Try asking...</div>', unsafe_allow_html=True)
-        
-        examples = [
-            "Driver wants ₹800 for 5km, fair?",
-            "Someone following me, what to do?",
-            "Restaurant bill seems high",
-            "Is this area safe at night?",
-            "Vendor aggressive, help!"
-        ]
-        
-        for example in examples:
-            st.markdown(f'<div class="example-item">"{example}"</div>', unsafe_allow_html=True)
-        
+        st.markdown("---")
+        if st.button("🔄 Edit Profile", use_container_width=True):
+            st.session_state.profile_complete = False
+            st.session_state.onboarding_step = 0
+            st.rerun()
+    
+    # Priority alerts
+    priorities = get_personalized_priorities(profile, data)
+    if priorities:
+        st.markdown('<div class="priority-alert">', unsafe_allow_html=True)
+        st.markdown('<div class="priority-title"><i class="fas fa-exclamation-triangle"></i> High Priority For You</div>', unsafe_allow_html=True)
+        for priority in priorities:
+            st.markdown(f'<div class="priority-item">{priority}</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
-        
-        st.markdown("---")
-        
-        # Emergency numbers
-        emergency_nums = safety_data.get("emergency_numbers", {}).get(country, {})
-        if emergency_nums:
-            st.markdown('<div class="sidebar-section">', unsafe_allow_html=True)
-            st.markdown('<div class="sidebar-title"><i class="fas fa-phone-alt"></i> Emergency Numbers</div>', unsafe_allow_html=True)
-            for service, number in emergency_nums.items():
-                st.markdown(f"**{service.title()}:** `{number}`")
-            st.markdown('</div>', unsafe_allow_html=True)
-        
-        st.markdown("---")
-        
-        if st.session_state.conversation_history:
-            if st.button("🗑️ Clear History", use_container_width=True):
-                st.session_state.conversation_history = []
-                st.rerun()
     
-    # Main Question Input
-    st.markdown('<div class="question-container">', unsafe_allow_html=True)
-    st.markdown('<div class="input-label"><i class="fas fa-question-circle"></i> Describe Your Situation</div>', unsafe_allow_html=True)
+    # Personalized recommendations
+    recs = get_personalized_recommendations(profile, data)
+    st.markdown('<div class="recommendation-card">', unsafe_allow_html=True)
+    st.markdown('<div class="rec-title"><i class="fas fa-lightbulb"></i> Personalized For You</div>', unsafe_allow_html=True)
+    for rec in recs:
+        st.markdown(f'<div class="rec-item">{rec}</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
     
-    user_question = st.text_area(
-        "What's happening?",
-        placeholder=f"Example: Taxi driver in {country} quoted ₹500 for a 3km ride. The meter shows ₹150. Is this a scam?",
-        height=120,
+    # Cultural bridge
+    cultural = get_cultural_bridge(profile, data)
+    st.markdown('<div class="cultural-bridge">', unsafe_allow_html=True)
+    st.markdown(f'<div class="cultural-title">🌍 Cultural Tips: {profile.get("home_country")} → {profile.get("destination_country")}</div>', unsafe_allow_html=True)
+    for tip in cultural:
+        st.markdown(f'<div class="cultural-tip">{tip}</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Priority phrases
+    phrases = get_priority_phrases(profile)
+    if phrases:
+        st.markdown(f'<div class="phrase-highlight">', unsafe_allow_html=True)
+        st.markdown(f'<div class="phrase-need">💬 Essential for {profile.get("interest", "travel").title()}</div>', unsafe_allow_html=True)
+        for need, local, meaning in phrases:
+            st.markdown(f'<div class="phrase-text">"{local}" = {meaning}</div>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    # AI Advisor
+    st.markdown("---")
+    st.markdown("### 🤖 Ask Your Personalized AI Safety Advisor")
+    
+    question = st.text_area(
+        "Question",
+        placeholder=f"e.g., Is it safe for a {profile.get('age_range', '')} {profile.get('gender', '')} to explore street food at night in {profile.get('destination_city')}?",
+        height=100,
         label_visibility="collapsed"
     )
     
-    col1, col2, col3 = st.columns([2, 1, 2])
-    with col2:
-        analyze_button = st.button("🔍 Analyze Safety", use_container_width=True, type="primary")
+    if st.button("🔍 Get Personalized Advice"):
+        if question.strip():
+            with st.spinner("Analyzing based on your profile..."):
+                raw = get_ai_response(question, profile, groq_client, data)
+                parsed = parse_response(raw)
+                st.session_state.conversation_history.append({"q": question, "r": parsed})
     
-    st.markdown('</div>', unsafe_allow_html=True)
-    
-    # Process query
-    if analyze_button and user_question.strip():
-        with st.spinner("🤖 Analyzing situation with AI..."):
-            raw_response = get_ai_response(user_question, country, groq_client, safety_data)
-            parsed = parse_response(raw_response)
-            
-            # Save to history
-            st.session_state.conversation_history.append({
-                "question": user_question,
-                "response": parsed,
-                "country": country,
-                "time": datetime.now().strftime("%I:%M %p")
-            })
-    
-    # Display latest response
+    # Display response
     if st.session_state.conversation_history:
         latest = st.session_state.conversation_history[-1]
-        parsed = latest["response"]
+        r = latest["r"]
         
-        st.markdown('<div class="response-section">', unsafe_allow_html=True)
+        st.markdown('<div class="question-card">', unsafe_allow_html=True)
         
-        # Threat Level Badge
-        threat_class = f"threat-{parsed['threat'].lower()}"
-        icon = "fa-exclamation-triangle" if parsed['threat'] == "HIGH" else ("fa-exclamation-circle" if parsed['threat'] == "MEDIUM" else "fa-check-circle")
+        badge_class = f"threat-{r['threat'].lower()}"
+        icon = "fa-exclamation-triangle" if r['threat'] == "HIGH" else ("fa-exclamation-circle" if r['threat'] == "MEDIUM" else "fa-check-circle")
         
-        st.markdown(f"""
-        <div class="{threat_class} threat-badge">
-            <i class="fas {icon}"></i> THREAT LEVEL: {parsed['threat']}
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown(f'<div class="{badge_class} threat-badge"><i class="fas {icon}"></i> {r["threat"]} THREAT</div>', unsafe_allow_html=True)
         
-        # Quick Assessment
-        st.markdown(f"""
-        <div class="answer-box">
-            <h4><i class="fas fa-brain"></i> Quick Assessment</h4>
-            <div class="answer-text">{parsed['assessment']}</div>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown(f'<p style="color:#334155;line-height:1.7;"><strong>For you specifically:</strong> {r["assessment"]}</p>', unsafe_allow_html=True)
         
-        # Immediate Actions
-        st.markdown('<div class="action-box">', unsafe_allow_html=True)
-        st.markdown('<h4><i class="fas fa-list-check"></i> What To Do Right Now</h4>', unsafe_allow_html=True)
-        
-        for i, action in enumerate(parsed['actions'], 1):
-            st.markdown(f"""
+        st.markdown('<p style="font-weight:700;margin-top:1.5rem;">Recommended Actions:</p>', unsafe_allow_html=True)
+        for i, action in enumerate(r["actions"], 1):
+            st.markdown(f'''
             <div class="action-item">
-                <div class="action-number">{i}</div>
+                <div class="action-num">{i}</div>
                 <div class="action-text">{action}</div>
             </div>
-            """, unsafe_allow_html=True)
+            ''', unsafe_allow_html=True)
         
         st.markdown('</div>', unsafe_allow_html=True)
-        
-        # Cultural Context
-        if parsed['cultural']:
-            st.markdown(f"""
-            <div class="cultural-box">
-                <h4><i class="fas fa-globe-asia"></i> Cultural Context</h4>
-                <div class="cultural-text">{parsed['cultural']}</div>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        # Emergency Contacts
-        if parsed['emergency'] or emergency_nums:
-            st.markdown('<div class="emergency-box-main">', unsafe_allow_html=True)
-            st.markdown('<h4><i class="fas fa-phone-volume"></i> Emergency Contacts</h4>', unsafe_allow_html=True)
-            
-            for service, number in emergency_nums.items():
-                st.markdown(f"""
-                <div class="emergency-number">
-                    <span class="emergency-label">{service.title()}</span>
-                    <span class="emergency-num">{number}</span>
-                </div>
-                """, unsafe_allow_html=True)
-            
-            st.markdown('</div>', unsafe_allow_html=True)
-        
-        st.markdown('</div>', unsafe_allow_html=True)
-    
-    # Conversation History
-    if len(st.session_state.conversation_history) > 1:
-        st.markdown("---")
-        st.markdown("### 💬 Previous Conversations")
-        
-        for chat in reversed(st.session_state.conversation_history[:-1][-3:]):
-            st.markdown(f"""
-            <div class="history-item">
-                <div class="history-question">
-                    <i class="fas fa-map-marker-alt"></i> {chat['country']} | 
-                    <i class="fas fa-clock"></i> {chat['time']} | 
-                    "{chat['question'][:100]}..."
-                </div>
-                <div class="threat-{chat['response']['threat'].lower()} threat-badge">
-                    {chat['response']['threat']}
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
     
     # Footer
     st.markdown("---")
     st.markdown("""
-    <div style='text-align: center; padding: 2rem; color: #94a3b8;'>
-        <p style='font-size: 1.1rem;'><strong>SafeWander</strong> - VisaVerse AI Hackathon 2024</p>
-        <p>Protecting travelers worldwide with AI-powered safety intelligence 🌍</p>
-        <p style='font-size: 0.9rem; margin-top: 1rem;'>
-            <i class="fas fa-shield-alt"></i> Real-time threat detection | 
-            <i class="fas fa-database"></i> 100+ scam database | 
-            <i class="fas fa-brain"></i> AI-powered analysis
-        </p>
+    <div style='text-align:center;padding:1.5rem;color:#94a3b8;'>
+        <p><strong>SafeWander</strong> - Your Personalized Travel Safety Companion</p>
+        <p style='font-size:0.9rem;'>Protecting you based on who you are and what you love 🌍</p>
     </div>
     """, unsafe_allow_html=True)
+
+# Main app logic
+def main():
+    if not st.session_state.profile_complete:
+        show_onboarding()
+    else:
+        show_dashboard()
 
 if __name__ == "__main__":
     main()
