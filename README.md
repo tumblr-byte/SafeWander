@@ -1,17 +1,23 @@
 # SafeWander
 
+"Wander far, stay safe wherever you are."
+
 AI-powered travel safety companion for tourists and solo travelers.
 
-## What it does
+## Problem Statement
 
-SafeWander helps travelers stay safe in unfamiliar destinations by providing:
+Millions of tourists face safety challenges when traveling to unfamiliar destinations - from transport scams and language barriers to emergency situations where they don't know local emergency numbers or how to communicate with authorities. Solo travelers, especially women, face additional safety concerns.
 
-- SOS Emergency System - One-tap emergency alert with officer dispatch and safety instructions
-- Scam Price Checker - Real-time price validation to detect tourist scams
-- Essential Phrases - 15 life-saving phrases with text-to-speech pronunciation
-- Cultural Guide - Local customs, do's and don'ts for respectful travel
-- Live Safety Map - Nearby police stations and safe zones
-- AI Safety Assistant - Personalized safety advice based on your profile
+## Solution
+
+SafeWander is an AI-powered safety companion that provides real-time protection and guidance for travelers through:
+
+- SOS Emergency System with officer dispatch
+- Scam Price Checker with local rate validation
+- Essential Phrases with text-to-speech
+- Cultural Guide for respectful travel
+- Live Safety Map with police stations
+- AI Safety Assistant for personalized advice
 
 ## Supported Countries
 
@@ -19,10 +25,63 @@ India, Thailand, Mexico, USA, Brazil
 
 ## Tech Stack
 
-- Streamlit
-- Groq AI (Llama 3.3)
-- Leaflet Maps
-- Web Speech API
+| Component | Technology |
+|-----------|------------|
+| Frontend | Streamlit |
+| AI Model | Groq API (Llama 3.3 70B) |
+| Maps | Leaflet.js + OpenStreetMap |
+| Text-to-Speech | Web Speech API |
+| Icons | Font Awesome 6.4 |
+| Styling | Custom CSS |
+
+## Architecture
+
+```
+User Input (Profile)
+       |
+       v
++------------------+
+|   Streamlit UI   |
++------------------+
+       |
+       +---> SOS Module ---> Officer Dispatch + Safety Instructions
+       |
+       +---> Scam Checker ---> Price Validation (Local Thresholds)
+       |
+       +---> Phrases ---> Text-to-Speech (Web Speech API)
+       |
+       +---> Cultural Guide ---> Dataset Lookup
+       |
+       +---> AI Assistant ---> Groq API (Llama 3.3) ---> Personalized Response
+       |
+       +---> Safety Map ---> Leaflet.js + Police Station Data
+```
+
+## How AI is Used (RAG Implementation)
+
+The AI component uses Retrieval-Augmented Generation (RAG) with Groq's Llama 3.3 70B model.
+
+### RAG Pipeline:
+
+1. User asks a safety question
+2. System retrieves relevant context from dataset.json:
+   - Transport scams for current country
+   - Harassment safety protocols
+   - Cultural guidelines
+   - Emergency numbers
+   - Area-specific warnings
+   - Food safety tips
+3. Retrieved context is injected into the AI prompt
+4. AI generates response using both its knowledge AND local dataset
+
+### What AI Receives:
+
+- User profile (name, gender, age range)
+- Current destination (country, city)
+- Retrieved local knowledge (scams, emergency numbers, cultural tips)
+- User's safety question
+
+This RAG approach ensures the AI gives location-specific advice based on real local data, not just general knowledge. For example, asking about taxi safety in Delhi will reference specific auto-rickshaw scams from the dataset.
 
 ## Setup
 
@@ -37,9 +96,13 @@ cd SafeWander
 pip install -r requirements.txt
 ```
 
-3. Add your Groq API key to Streamlit secrets or environment variable
+3. Add Groq API key
 ```
-GROQ_API_KEY=your_api_key_here
+export GROQ_API_KEY=your_api_key_here
+```
+Or add to Streamlit secrets (.streamlit/secrets.toml):
+```
+GROQ_API_KEY = "your_api_key_here"
 ```
 
 4. Run the app
@@ -50,16 +113,55 @@ streamlit run app.py
 ## Features
 
 ### SOS Emergency
-Quick emergency activation with reason selection. Dispatches appropriate officer based on user gender and location. Provides real-time safety instructions while waiting for help.
+- One-tap emergency activation
+- Reason selection (stalking, theft, unsafe, urgent)
+- Gender-specific officer dispatch (female officers for female travelers in India)
+- Real-time safety instructions while waiting
+- Local emergency numbers display
 
-### Scam Checker
-Enter any price to check if you're being overcharged. Compares against local rates and flags suspicious pricing. Works for auto-rickshaws, taxis, and other transport.
+### Scam Price Checker
+- Enter any amount to validate
+- Compares against local transport rates
+- Detects auto/taxi pricing
+- Shows overcharge percentage
+- Country-specific thresholds
 
 ### Essential Phrases
-15 critical phrases for each destination country. Click to hear pronunciation using text-to-speech. Includes emergency phrases, bargaining, and basic communication.
+- 15 critical phrases per country
+- Native script display
+- Text-to-speech pronunciation
+- Emergency, bargaining, and basic communication phrases
 
 ### Cultural Guide
-Local dress codes, gestures, and etiquette. Clear do's and don'ts to avoid cultural misunderstandings.
+- Local dress codes
+- Gesture meanings
+- Etiquette tips
+- Clear do's and don'ts
+
+### Live Safety Map
+- Interactive Leaflet map
+- Police station locations
+- Safe zone markers
+- User location tracking
+
+## Data Sources
+
+- Transport scam data: Curated from travel forums and safety reports
+- Emergency numbers: Official government sources
+- Cultural guidelines: Travel advisory compilations
+- Price thresholds: Local transport rate surveys
+
+## Future Scope
+
+- Real-time police station API integration
+- Offline mode for areas without internet
+- Community reporting for scam alerts
+- Multi-language UI support
+- Wearable device integration for SOS
+
+## Developer
+
+Solo project built for hackathon submission.
 
 ## License
 
