@@ -1,180 +1,405 @@
 {
-  "countries": [
+  "countries": ["India", "Thailand", "Mexico", "USA", "Brazil"],
+  
+  "transport_scams": [
     {
-      "id": "IND",
-      "name": "India",
-      "emergency_numbers": {
-        "police": "100",
-        "ambulance": "102",
-        "women_helpline": "1091",
-        "fire": "101"
-      },
-      "transport": {
-        "available": ["Uber", "Ola", "Metro", "Auto Rickshaw", "Bus"],
-        "avg_taxi_fare_per_km": 18,
-        "airport_fixed_rate": {
-          "delhi": 500,
-          "mumbai": 650
-        }
-      },
-      "common_scams": [
-        {
-          "name": "Taxi Overcharge Scam",
-          "situation_keywords": ["taxi", "overcharge", "extra money", "no meter"],
-          "how_it_happens": "Driver refuses to start meter and demands 3–5x price.",
-          "how_to_avoid": [
-            "Always insist on meter.",
-            "Use Uber/Ola.",
-            "Do not agree to fixed price at airport."
-          ],
-          "what_to_do": [
-            "Politely refuse.",
-            "Take screenshot of driver.",
-            "Report on Uber/Ola help support.",
-            "Call police if forced."
-          ]
-        },
-        {
-          "name": "Fake Tourist Guide",
-          "situation_keywords": ["guide", "tour", "ticket"],
-          "how_it_happens": "Fake guide approaches claiming official license.",
-          "how_to_avoid": [
-            "Book only via official counters.",
-            "Avoid unsolicited helpers."
-          ],
-          "what_to_do": [
-            "Walk away.",
-            "Ask to see ID.",
-            "Contact tourist police."
-          ]
-        }
-      ],
-      "harassment_patterns": {
-        "examples": [
-          {
-            "name": "Being Followed",
-            "description": "Someone walks behind you for a long distance.",
-            "recommended_actions": [
-              "Move to crowded area.",
-              "Enter a shop.",
-              "Call emergency contact.",
-              "Use SOS inside app."
-            ]
-          },
-          {
-            "name": "Unwanted Touching",
-            "description": "Someone bumps or touches repeatedly.",
-            "recommended_actions": [
-              "Move away immediately.",
-              "Raise your voice to attract attention.",
-              "Call women helpline."
-            ]
-          }
-        ]
-      },
-      "culture": {
-        "greetings": "Namaste with slight bow.",
-        "dress_code": "Modest clothing recommended in temples.",
-        "dos": ["Remove shoes when entering homes/temples.", "Respect elders."],
-        "donts": ["Avoid kissing in public.", "Don't use left hand to give items."]
-      },
-      "local_phrases": {
-        "help": "Madad kijiye!",
-        "where_is": "Yeh kahan hai?",
-        "emergency": "Mujhe madad chahiye!",
-        "stop": "Ruko!"
-      },
-      "laws": {
-        "alcohol": "Legal age varies by state (18–25).",
-        "drugs": "Strictly illegal.",
-        "privacy": "Do not take photos of women without permission.",
-        "restricted_areas": ["Military zones"]
-      },
-      "important_locations": {
-        "hospitals": [
-          {
-            "name": "AIIMS Hospital",
-            "lat": 28.5672,
-            "lng": 77.2100,
-            "contact": "011-26588500"
-          }
-        ],
-        "police_stations": [
-          {
-            "name": "Connaught Place Police Station",
-            "lat": 28.6329,
-            "lng": 77.2195,
-            "contact": "100"
-          }
-        ],
-        "embassy": {
-          "usa": {
-            "address": "Shantipath, Chanakyapuri",
-            "contact": "+91 11 2419 8000"
-          }
-        }
-      },
-      "sample_weather": {
-        "temperature": 32,
-        "humidity": 45,
-        "condition": "Sunny"
-      }
+      "country": "India",
+      "location": "Delhi",
+      "scam_type": "Auto rickshaw overcharging",
+      "description": "Auto drivers quote 3-5x normal fare to tourists at airports/stations",
+      "normal_rate": "₹15-20 per km, base fare ₹25",
+      "scam_rate": "₹50-100 per km or flat ₹500-1000",
+      "red_flags": ["refuses meter", "quotes flat rate", "takes longer route"],
+      "safety_advice": "Insist on meter. Use Ola/Uber/Rapido. Pre-book airport taxis. Note auto number.",
+      "emergency_phrases": "Meter chalao (Use meter), Police bulao (Call police)",
+      "threat_level": "medium"
     },
-
-
     {
-      "id": "JPN",
-      "name": "Japan",
-      "emergency_numbers": {
-        "police": "110",
-        "ambulance": "119"
-      },
-      "transport": {
-        "available": ["Metro", "JR Rail", "Taxi"],
-        "avg_taxi_fare_per_km": 410
-      },
-      "common_scams": [
-        {
-          "name": "Bar Overcharging Scam",
-          "situation_keywords": ["bar", "bill", "overcharge"],
-          "how_it_happens": "Tourists are invited into clubs with hidden charges.",
-          "how_to_avoid": ["Check menu prices before entering."],
-          "what_to_do": ["Call police 110.", "Refuse to pay fake charges."]
-        }
-      ],
-      "culture": {
-        "greetings": "Bow slightly.",
-        "dos": ["Be quiet on trains.", "Carry cash."],
-        "donts": ["Don’t tip.", "Don’t talk loud in public."]
-      }
+      "country": "India",
+      "location": "Mumbai",
+      "scam_type": "Taxi meter manipulation",
+      "description": "Rigged meters run 2-3x faster than actual speed",
+      "normal_rate": "₹23-28 per km",
+      "scam_rate": "Meter shows double distance",
+      "safety_advice": "Use app cabs. Check route on Google Maps. Verify with hotel staff.",
+      "threat_level": "medium"
     },
-
-
     {
-      "id": "USA",
-      "name": "United States",
-      "emergency_numbers": {
-        "police": "911",
-        "ambulance": "911"
-      },
-      "transport": {
-        "available": ["Uber", "Lyft", "Bus", "Taxi"],
-        "avg_taxi_fare_per_km": 1.6
-      },
-      "common_scams": [
-        {
-          "name": "Fake Donation Scam",
-          "situation_keywords": ["donation", "money", "help"],
-          "how_it_happens": "People pretend to raise money for fake causes.",
-          "how_to_avoid": ["Donate only to registered charities."],
-          "what_to_do": ["Walk away.", "Report to authorities."]
-        }
+      "country": "Thailand",
+      "location": "Bangkok",
+      "scam_type": "Tuk-tuk gem shop scam",
+      "description": "Tuk-tuk drivers offer cheap tours but take you to gem shops for commission",
+      "normal_rate": "100-200 baht per trip",
+      "scam_rate": "20-50 baht tour that wastes 3 hours at shops",
+      "red_flags": ["too cheap price", "mentions shopping", "special deal today"],
+      "safety_advice": "Use Grab/Bolt apps. Agree on price before. Say NO to any shop stops.",
+      "emergency_phrases": "Mai ao (Don't want), Tamruat (Police)",
+      "threat_level": "low"
+    },
+    {
+      "country": "Thailand",
+      "location": "Phuket/Pattaya",
+      "scam_type": "Jet ski damage scam",
+      "description": "Rental operators claim fake damages and demand huge payments",
+      "normal_rate": "1000-1500 baht per 30 min",
+      "scam_rate": "20,000-50,000 baht for fake scratches",
+      "red_flags": ["no damage inspection before", "cash only deposit", "aggressive after"],
+      "safety_advice": "Take photos/video before use. Use reputable beaches. Get written agreement. Call tourist police 1155.",
+      "threat_level": "high"
+    },
+    {
+      "country": "Mexico",
+      "location": "Cancun/Playa del Carmen",
+      "scam_type": "Taxi flat rate scam",
+      "description": "Taxis at airport/tourist zones charge 5-10x normal rate",
+      "normal_rate": "$10-15 USD to hotel zone",
+      "scam_rate": "$50-100 USD for same trip",
+      "red_flags": ["no meter", "flat rate only", "refuses to negotiate"],
+      "safety_advice": "Use official airport taxis with fixed rates. Pre-book transfer. Use Uber where available.",
+      "emergency_phrases": "¿Cuánto cuesta? (How much?), Muy caro (Too expensive)",
+      "threat_level": "medium"
+    },
+    {
+      "country": "Mexico",
+      "location": "Mexico City",
+      "scam_type": "Green taxi safety issues",
+      "description": "Unlicensed green taxis involved in robberies",
+      "safety_advice": "ONLY use pink and white taxis or Uber/Didi. Never hail green taxis on street. Use taxi stands at malls/restaurants.",
+      "red_flags": ["green taxi", "no official license", "picks up from street"],
+      "threat_level": "high"
+    },
+    {
+      "country": "USA",
+      "location": "New York City",
+      "scam_type": "Fake taxi/Uber scam",
+      "description": "Fake taxis at airports charge 2-3x normal rate",
+      "normal_rate": "$50-70 flat rate JFK to Manhattan",
+      "scam_rate": "$150-300 for same trip",
+      "red_flags": ["approaches you", "no meter", "cash only"],
+      "safety_advice": "Only use official yellow cabs or app-based rides. Check driver matches app. Taxis must use meter.",
+      "threat_level": "medium"
+    },
+    {
+      "country": "USA",
+      "location": "Las Vegas",
+      "scam_type": "Long hauling by taxis",
+      "description": "Taxi takes I-15 instead of surface streets to airport, adding $20-30",
+      "normal_route": "Surface streets: 4 miles, $15-20",
+      "scam_route": "I-15 freeway: 9 miles, $35-45",
+      "safety_advice": "Tell driver 'surface streets only, no freeway'. Note taxi number. File complaint if scammed.",
+      "threat_level": "low"
+    },
+    {
+      "country": "Brazil",
+      "location": "Rio de Janeiro",
+      "scam_type": "Unofficial taxi robbery",
+      "description": "Unmarked taxis stop at fake police or rob passengers",
+      "safety_advice": "ONLY use official yellow/white taxis or Uber/99. Never accept rides from airport touts. Pre-book through hotel.",
+      "red_flags": ["unmarked car", "approaches you", "stops at unusual place"],
+      "emergency_phrases": "Socorro! (Help!), Polícia! (Police!)",
+      "threat_level": "high"
+    },
+    {
+      "country": "Brazil",
+      "location": "São Paulo",
+      "scam_type": "ATM skimming devices",
+      "description": "Fake card readers installed on ATMs to steal data",
+      "safety_advice": "Use ATMs inside banks only. Check for loose parts. Cover PIN. Use credit cards when possible.",
+      "red_flags": ["ATM on street", "loose card slot", "suspicious devices"],
+      "threat_level": "high"
+    }
+  ],
+
+  "harassment_safety": [
+    {
+      "country": "Global",
+      "situation": "Being followed",
+      "threat_level": "high",
+      "immediate_actions": [
+        "Go to crowded public place (mall, restaurant, police station)",
+        "Do NOT go to isolated areas",
+        "Call local emergency number",
+        "Share live location with trusted contact",
+        "Enter nearest shop and ask for help",
+        "Make eye contact with security/police"
+      ]
+    },
+    {
+      "country": "Global",
+      "situation": "Unwanted touching/harassment",
+      "threat_level": "high",
+      "immediate_actions": [
+        "Loudly say: Stop! Leave me alone!",
+        "Create scene - harassers fear attention",
+        "Move to crowded area immediately",
+        "Ask nearby people for help",
+        "Call emergency number",
+        "Take photo/video if safe",
+        "Do NOT engage in conversation"
+      ]
+    },
+    {
+      "country": "Global",
+      "situation": "Drink spiking concern",
+      "threat_level": "high",
+      "prevention": [
+        "Never leave drink unattended",
+        "Watch bartender make your drink",
+        "Refuse drinks from strangers",
+        "Use drink covers/coasters",
+        "Trust your instincts if taste seems off"
       ],
-      "culture": {
-        "greetings": "Handshake",
-        "dos": ["Maintain eye contact."],
-        "donts": ["Don’t invade personal space."]
-      }
+      "symptoms": "Sudden drowsiness, confusion, dizziness - seek help IMMEDIATELY"
+    },
+    {
+      "country": "Global",
+      "situation": "Street robbery attempt",
+      "threat_level": "high",
+      "immediate_actions": [
+        "Don't resist if weapon involved - give items",
+        "Your life > your belongings",
+        "Memorize details: height, clothing, direction fled",
+        "Report to police immediately",
+        "Cancel cards/report phone stolen",
+        "File police report for insurance"
+      ]
+    }
+  ],
+
+  "accommodation_scams": [
+    {
+      "country": "India",
+      "scam_type": "Hotel switch scam",
+      "description": "Driver claims your hotel is closed, takes you to commission hotel",
+      "safety_advice": "Call hotel directly. Show confirmed booking. Refuse alternatives from drivers.",
+      "threat_level": "medium"
+    },
+    {
+      "country": "Thailand",
+      "scam_type": "Room upgrade scam",
+      "description": "Hotel claims your booked room unavailable, charges more for upgrade",
+      "safety_advice": "Show booking confirmation. Demand same price or refund. Check reviews beforehand.",
+      "threat_level": "low"
+    },
+    {
+      "country": "Mexico",
+      "scam_type": "Timeshare harassment",
+      "description": "Aggressive timeshare sellers offer free tours/gifts to trap you",
+      "safety_advice": "Politely refuse all timeshare offers. Don't give personal info. Never sign anything.",
+      "threat_level": "low"
+    },
+    {
+      "country": "USA",
+      "scam_type": "Fake Airbnb/VRBO listings",
+      "description": "Scammers post fake properties, take payment, property doesn't exist",
+      "safety_advice": "Book only through official platforms. Verify host identity. Read all reviews. Never pay outside platform.",
+      "threat_level": "medium"
+    },
+    {
+      "country": "Brazil",
+      "scam_type": "Hostel bag theft",
+      "description": "Theft from hostel rooms and lockers",
+      "safety_advice": "Use your own lock. Don't leave valuables. Use hostel safe. Keep passport on you or in room safe.",
+      "threat_level": "medium"
+    }
+  ],
+
+  "shopping_scams": [
+    {
+      "country": "India",
+      "scam_type": "Gem export scam",
+      "description": "Scammers convince tourists to buy fake gems to resell abroad",
+      "safety_advice": "NEVER buy gems for resale. 100% scam. No exceptions.",
+      "threat_level": "high"
+    },
+    {
+      "country": "Thailand",
+      "scam_type": "Suit shop scam",
+      "description": "Tuk-tuk takes you to tailor, they pressure custom suits at inflated prices, poor quality",
+      "safety_advice": "Research tailors beforehand. Don't go with tuk-tuk recommendations. Check reviews online.",
+      "threat_level": "medium"
+    },
+    {
+      "country": "Mexico",
+      "scam_type": "Pharmacy counterfeit drugs",
+      "description": "Tourist pharmacies sell fake medications",
+      "safety_advice": "Use reputable chains like Farmacia Guadalajara. Avoid street pharmacies. Check packaging carefully.",
+      "threat_level": "high"
+    },
+    {
+      "country": "USA",
+      "scam_type": "Times Square characters",
+      "description": "Costumed characters pose for photos then demand $20-50 payment",
+      "safety_advice": "Agree on price before photo. Say no firmly. They can't force you to pay.",
+      "threat_level": "low"
+    },
+    {
+      "country": "Brazil",
+      "scam_type": "Beach vendor overcharge",
+      "description": "Beach vendors charge 5-10x normal prices",
+      "safety_advice": "Ask price before. Compare with nearby vendors. Bring your own drinks/snacks.",
+      "threat_level": "low"
+    }
+  ],
+
+  "food_safety": [
+    {
+      "country": "India",
+      "guidelines": "Eat at busy places. Avoid pre-cut fruits. Drink bottled water only. Choose hot, freshly cooked food.",
+      "safe_options": "Packaged snacks, hot chai, freshly fried items, restaurants with reviews"
+    },
+    {
+      "country": "Thailand",
+      "guidelines": "Street food generally safe. Avoid raw vegetables/salads. Ice usually safe in cities. Wash hands frequently.",
+      "safe_options": "Pad Thai from busy stalls, grilled meats, fresh coconuts, 7-11 packaged food"
+    },
+    {
+      "country": "Mexico",
+      "guidelines": "Street tacos usually safe if busy. Avoid agua fresca from street. Bottled water only. Peel fruits yourself.",
+      "safe_options": "Tacos from busy stands, elote, chain restaurants, sealed drinks"
+    },
+    {
+      "country": "USA",
+      "guidelines": "Generally safe. Check health ratings (A/B grade displayed). Avoid expired food. Tap water safe to drink.",
+      "safe_options": "Restaurants with visible health grades, major chains, food trucks with permits"
+    },
+    {
+      "country": "Brazil",
+      "guidelines": "Avoid street food in Rio/São Paulo. Restaurants generally safe. Peel fruits. Bottled water in some areas.",
+      "safe_options": "Churrascarias, por kilo restaurants, açaí from reputable places"
+    }
+  ],
+
+  "emergency_numbers": {
+    "India": {
+      "police": "100",
+      "ambulance": "102",
+      "tourist_helpline": "1363",
+      "women_helpline": "1091"
+    },
+    "Thailand": {
+      "police": "191",
+      "ambulance": "1669",
+      "tourist_police": "1155",
+      "emergency": "911"
+    },
+    "Mexico": {
+      "emergency": "911",
+      "police": "911",
+      "ambulance": "911",
+      "tourist_assistance": "078"
+    },
+    "USA": {
+      "emergency": "911",
+      "police": "911",
+      "ambulance": "911",
+      "non_emergency": "311"
+    },
+    "Brazil": {
+      "police": "190",
+      "ambulance": "192",
+      "fire": "193",
+      "tourist_police": "1746 (Rio)"
+    }
+  },
+
+  "cultural_guidelines": [
+    {
+      "country": "India",
+      "dress": "Modest clothing. Cover shoulders/knees at temples. Remove shoes at religious sites.",
+      "gestures": "Head wobble = yes. Right hand for eating/giving. Don't point feet at people.",
+      "etiquette": "Ask before photographing people. PDA not common. Bargaining expected at markets."
+    },
+    {
+      "country": "Thailand",
+      "dress": "Modest at temples. Cover shoulders/knees. Remove shoes indoors.",
+      "gestures": "Wai greeting (hands together). Don't touch heads. Feet are lowest, don't point at people/Buddha.",
+      "etiquette": "Don't disrespect Buddha images. Respect monks. Don't touch monks if you're female."
+    },
+    {
+      "country": "Mexico",
+      "dress": "Casual fine. Modest in churches. Beachwear only at beach.",
+      "gestures": "Close talking distance normal. Greet with handshake/kiss on cheek.",
+      "etiquette": "Say buenos días/buenas tardes. Tipping 10-15% expected. Learn basic Spanish appreciated."
+    },
+    {
+      "country": "USA",
+      "dress": "Very casual accepted. Smart casual for nice restaurants.",
+      "gestures": "Personal space important (arm's length). Direct eye contact = confidence.",
+      "etiquette": "Tipping 15-20% mandatory. Small talk common. Queue culture strict."
+    },
+    {
+      "country": "Brazil",
+      "dress": "Casual, beachwear common. Dress up for nice places at night.",
+      "gestures": "Close distance normal. Greeting kiss on both cheeks. Thumbs up OK.",
+      "etiquette": "Late arrival acceptable. Loud conversations normal. Learn basic Portuguese appreciated."
+    }
+  ],
+
+  "price_reference": {
+    "India": {
+      "transport": "Auto ₹15-25/km, Metro ₹10-60, Uber ₹10-15/km",
+      "food": "Street ₹30-100, Restaurant ₹150-400, Water ₹20",
+      "accommodation": "Hostel ₹300-800, Budget hotel ₹800-2000"
+    },
+    "Thailand": {
+      "transport": "Tuk-tuk 100-200฿, BTS 15-60฿, Grab 50-150฿",
+      "food": "Street 40-80฿, Restaurant 150-400฿, Water 10-20฿",
+      "accommodation": "Hostel 200-600฿, Hotel 800-2500฿"
+    },
+    "Mexico": {
+      "transport": "Taxi $5-15, Metro $5, Uber $3-10",
+      "food": "Tacos $1-3, Restaurant $10-30, Water $1",
+      "accommodation": "Hostel $10-25, Hotel $40-100"
+    },
+    "USA": {
+      "transport": "Taxi $15-40, Subway $2-3, Uber $10-30",
+      "food": "Fast food $8-15, Restaurant $20-50, Water $1-2",
+      "accommodation": "Hostel $30-60, Hotel $80-200"
+    },
+    "Brazil": {
+      "transport": "Taxi R$20-50, Metro R$4-5, Uber R$15-40",
+      "food": "Street R$10-30, Restaurant R$40-100, Water R$3-5",
+      "accommodation": "Hostel R$40-100, Hotel R$150-400"
+    }
+  },
+
+  "area_specific_warnings": [
+    {
+      "country": "India",
+      "location": "Delhi",
+      "avoid_areas": "Empty streets after 10 PM, isolated parks",
+      "safe_areas": "Connaught Place, Khan Market, major malls, metro stations",
+      "timing": "Metro safe until 11 PM, avoid empty metro stations late"
+    },
+    {
+      "country": "Thailand",
+      "location": "Bangkok",
+      "avoid_areas": "Patpong late night (pickpockets), quiet sois after midnight",
+      "safe_areas": "Sukhumvit, Siam, Asiatique",
+      "timing": "BTS/MRT safe all hours, Grab safer than tuk-tuk at night"
+    },
+    {
+      "country": "Mexico",
+      "location": "Cancun",
+      "avoid_areas": "Downtown after dark, empty beaches at night",
+      "safe_areas": "Hotel zone, major resorts, Playa del Carmen main area",
+      "timing": "Stay in tourist zones after dark, use taxis not buses at night"
+    },
+    {
+      "country": "USA",
+      "location": "New York",
+      "avoid_areas": "Empty subway cars late night, certain parts of Bronx/Brooklyn",
+      "safe_areas": "Manhattan tourist areas 24/7, Brooklyn well-lit streets",
+      "timing": "Subway safe but stay in middle cars at night"
+    },
+    {
+      "country": "Brazil",
+      "location": "Rio",
+      "avoid_areas": "Favelas without tour, empty beaches at night, Centro after dark",
+      "safe_areas": "Copacabana/Ipanema during day, Shopping malls, Leblon",
+      "timing": "Don't walk streets after 10 PM, use Uber"
     }
   ]
 }
+
