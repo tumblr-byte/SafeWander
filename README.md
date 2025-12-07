@@ -115,7 +115,7 @@ streamlit run app.py
 ### SOS Emergency
 - One-tap emergency activation
 - Reason selection (stalking, theft, unsafe, urgent)
-- Gender-specific officer dispatch (female officers for female travelers in India)
+- Gender-specific officer dispatch 
 - Real-time safety instructions while waiting
 - Local emergency numbers display
 
@@ -159,11 +159,6 @@ streamlit run app.py
 - Multi-language UI support
 - Wearable device integration for SOS
 
-## Developer
 
-Solo project built for hackathon submission.
 
-## License
-
-MIT License
 
