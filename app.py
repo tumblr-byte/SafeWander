@@ -662,12 +662,29 @@ POLICE_STATIONS = {
     ]
 }
 
-MOCK_OFFICERS = [
-    {"name": "Officer Priya Sharma", "badge": "DL-2847", "eta": "7 mins", "gender": "Female"},
-    {"name": "Officer Rajesh Kumar", "badge": "DL-3921", "eta": "5 mins", "gender": "Male"},
-    {"name": "Officer Anjali Singh", "badge": "DL-4102", "eta": "9 mins", "gender": "Female"},
-    {"name": "Officer Vikram Rao", "badge": "DL-5673", "eta": "6 mins", "gender": "Male"}
-]
+# Country-specific mock officers
+MOCK_OFFICERS = {
+    "India": [
+        {"name": "Officer Priya Sharma", "badge": "DL-2847", "eta": "7 mins", "gender": "Female"},
+        {"name": "Officer Rajesh Kumar", "badge": "DL-3921", "eta": "5 mins", "gender": "Male"}
+    ],
+    "Thailand": [
+        {"name": "Officer Siriporn Chai", "badge": "BK-1124", "eta": "6 mins", "gender": "Female"},
+        {"name": "Officer Somchai Prasert", "badge": "BK-2231", "eta": "5 mins", "gender": "Male"}
+    ],
+    "Mexico": [
+        {"name": "Officer Maria Garcia", "badge": "MX-3345", "eta": "8 mins", "gender": "Female"},
+        {"name": "Officer Carlos Rodriguez", "badge": "MX-4421", "eta": "6 mins", "gender": "Male"}
+    ],
+    "USA": [
+        {"name": "Officer Sarah Johnson", "badge": "NY-5567", "eta": "5 mins", "gender": "Female"},
+        {"name": "Officer Michael Davis", "badge": "NY-6632", "eta": "4 mins", "gender": "Male"}
+    ],
+    "Brazil": [
+        {"name": "Officer Ana Silva", "badge": "RJ-7789", "eta": "7 mins", "gender": "Female"},
+        {"name": "Officer Pedro Santos", "badge": "RJ-8845", "eta": "6 mins", "gender": "Male"}
+    ]
+}
 
 
 # Navigation Bar Component
@@ -864,11 +881,14 @@ def show_sos_modal():
         gender = profile.get('gender', 'Male')
         country = profile.get('destination_country', 'India')
         
-        if gender == 'Female' and country == 'India':
-            officer = [o for o in MOCK_OFFICERS if o['gender'] == 'Female'][0]
+        # Get country-specific officers
+        country_officers = MOCK_OFFICERS.get(country, MOCK_OFFICERS["India"])
+        
+        if gender == 'Female':
+            officer = [o for o in country_officers if o['gender'] == 'Female'][0]
             st.markdown('<div class="alert-success"><i class="fa-solid fa-venus"></i> Female officer dispatched as per your request</div>', unsafe_allow_html=True)
         else:
-            officer = MOCK_OFFICERS[1]
+            officer = [o for o in country_officers if o['gender'] == 'Male'][0]
         
         st.markdown(f'''
         <div class="officer-card">
@@ -1152,6 +1172,32 @@ def show_cultural_guide():
     
     cultural = next((c for c in data.get("cultural_guidelines", []) if c.get("country") == country), {})
     
+    # Country-specific Do's and Don'ts
+    DOS_DONTS = {
+        "India": {
+            "dos": ["Remove shoes at temples/homes", "Use right hand for giving/receiving", "Ask before photographing people", "Dress modestly at religious sites"],
+            "donts": ["Don't point feet at people/deities", "Don't touch someone's head", "Don't wear shoes in temples", "Don't show excessive PDA"]
+        },
+        "Thailand": {
+            "dos": ["Wai greeting (hands together, bow)", "Remove shoes before entering homes", "Stand for royal anthem", "Dress modestly at temples"],
+            "donts": ["Don't touch anyone's head", "Don't point feet at Buddha", "Don't disrespect the monarchy", "Don't touch monks if female"]
+        },
+        "Mexico": {
+            "dos": ["Greet with handshake or kiss on cheek", "Say buenos dias/buenas tardes", "Tip 10-15% at restaurants", "Learn basic Spanish phrases"],
+            "donts": ["Don't refuse food offered", "Don't be overly punctual (casual settings)", "Don't make OK sign (offensive)", "Don't discuss immigration politics"]
+        },
+        "USA": {
+            "dos": ["Tip 15-20% at restaurants", "Respect personal space (arm's length)", "Queue in lines properly", "Make direct eye contact"],
+            "donts": ["Don't skip tipping (it's mandatory)", "Don't cut in lines", "Don't smoke in public buildings", "Don't discuss salary openly"]
+        },
+        "Brazil": {
+            "dos": ["Greet with kiss on both cheeks", "Be warm and friendly", "Learn basic Portuguese", "Dress up for nice restaurants"],
+            "donts": ["Don't make OK sign (offensive)", "Don't discuss Argentina rivalry", "Don't flash expensive items", "Don't walk alone at night in cities"]
+        }
+    }
+    
+    country_tips = DOS_DONTS.get(country, DOS_DONTS["India"])
+    
     st.markdown(f'<div class="section-header"><i class="fa-solid fa-earth-americas"></i> Cultural Respect Guide: {country}</div>', unsafe_allow_html=True)
     
     st.markdown('<div class="cultural-grid">', unsafe_allow_html=True)
@@ -1163,7 +1209,7 @@ def show_cultural_guide():
         <div class="culture-card">
             <div class="culture-icon"><i class="fa-solid fa-shirt"></i></div>
             <div class="culture-title">Dress Code</div>
-            <div class="culture-text">{cultural.get("dress", "Dress modestly in religious places")}</div>
+            <div class="culture-text">{cultural.get("dress", "Dress appropriately for the location")}</div>
         </div>
         ''', unsafe_allow_html=True)
     
@@ -1172,7 +1218,7 @@ def show_cultural_guide():
         <div class="culture-card">
             <div class="culture-icon"><i class="fa-solid fa-handshake"></i></div>
             <div class="culture-title">Gestures</div>
-            <div class="culture-text">{cultural.get("gestures", "Be respectful with gestures")}</div>
+            <div class="culture-text">{cultural.get("gestures", "Be mindful of local gestures")}</div>
         </div>
         ''', unsafe_allow_html=True)
     
@@ -1189,28 +1235,25 @@ def show_cultural_guide():
     
     col1, col2 = st.columns(2)
     
+    dos_list = "".join([f"<li>{item}</li>" for item in country_tips["dos"]])
+    donts_list = "".join([f"<li>{item}</li>" for item in country_tips["donts"]])
+    
     with col1:
-        st.markdown('''
+        st.markdown(f'''
         <div style="background:linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);padding:1rem;border-radius:12px;border-left:4px solid #10b981;">
-            <h4 style="color:#065f46;font-size:0.95rem;margin:0 0 0.5rem 0;"><i class="fa-solid fa-check"></i> DO's</h4>
+            <h4 style="color:#065f46;font-size:0.95rem;margin:0 0 0.5rem 0;"><i class="fa-solid fa-check"></i> DO's in {country}</h4>
             <ul style="color:#047857;font-size:0.8rem;line-height:1.8;margin:0;padding-left:1.2rem;">
-                <li>Remove shoes at temples/homes</li>
-                <li>Use right hand for giving</li>
-                <li>Ask before photographing</li>
-                <li>Respect religious customs</li>
+                {dos_list}
             </ul>
         </div>
         ''', unsafe_allow_html=True)
     
     with col2:
-        st.markdown('''
+        st.markdown(f'''
         <div style="background:linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);padding:1rem;border-radius:12px;border-left:4px solid #ef4444;">
-            <h4 style="color:#991b1b;font-size:0.95rem;margin:0 0 0.5rem 0;"><i class="fa-solid fa-xmark"></i> DON'Ts</h4>
+            <h4 style="color:#991b1b;font-size:0.95rem;margin:0 0 0.5rem 0;"><i class="fa-solid fa-xmark"></i> DON'Ts in {country}</h4>
             <ul style="color:#991b1b;font-size:0.8rem;line-height:1.8;margin:0;padding-left:1.2rem;">
-                <li>Don't point feet at people</li>
-                <li>Don't touch heads</li>
-                <li>Don't wear shoes in temples</li>
-                <li>Don't show excessive PDA</li>
+                {donts_list}
             </ul>
         </div>
         ''', unsafe_allow_html=True)
@@ -1443,6 +1486,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
